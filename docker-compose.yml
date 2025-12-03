@@ -1,0 +1,106 @@
+services:
+  # SSL 인증서 관리
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    restart: unless-stopped
+    volumes:
+      - /home/ubuntu/ssl/certbot/conf:/etc/letsencrypt:ro
+      - /home/ubuntu/ssl/certbot/www:/var/www/certbot:ro
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+
+  redis:
+    image: redis:8.0.3-alpine
+    container_name: redis_cache
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  backend:
+    image: batt-backend:latest
+    container_name: spring_backend
+    expose:
+      - "8080"
+
+    environment:
+      # 기본 설정
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      
+      # HTTPS OAuth 설정
+      OAUTH2_KAKAO_AUTHORIZATION_URL: https://kauth.kakao.com/oauth/authorize
+      OAUTH2_KAKAO_TOKEN_URL: https://kauth.kakao.com/oauth/token
+      OAUTH2_KAKAO_USER_INFO_URI: https://kapi.kakao.com/v2/user/me
+      OAUTH2_KAKAO_OIDC_JWK_SET_URI: https://kauth.kakao.com/.well-known/jwks.json
+      OAUTH2_KAKAO_GRANT_TYPE: authorization_code
+      OAUTH2_KAKAO_LOGIN_REDIRECT_URI: ${OAUTH2_KAKAO_LOGIN_REDIRECT_URI}
+      OAUTH2_KAKAO_CLIENT_ID: ${OAUTH2_KAKAO_CLIENT_ID}
+      OAUTH2_KAKAO_CLIENT_SECRET: ${OAUTH2_KAKAO_CLIENT_SECRET}
+      
+      OAUTH2_NAVER_AUTHORIZATION_URL: https://nid.naver.com/oauth2.0/authorize
+      OAUTH2_NAVER_TOKEN_URL: https://nid.naver.com/oauth2.0/token
+      OAUTH2_NAVER_USER_INFO_URI: https://openapi.naver.com/v1/nid/me
+      OAUTH2_NAVER_GRANT_TYPE: authorization_code
+      OAUTH2_NAVER_LOGIN_REDIRECT_URI: ${OAUTH2_NAVER_LOGIN_REDIRECT_URI}
+      OAUTH2_NAVER_CLIENT_ID: ${OAUTH2_NAVER_CLIENT_ID}
+      OAUTH2_NAVER_CLIENT_SECRET: ${OAUTH2_NAVER_CLIENT_SECRET}
+      
+      JWT_SECRET: ${JWT_SECRET}
+      HOST_ALLOWED_ORIGINS: ${HOST_ALLOWED_ORIGINS}
+      HOST_FRONTEND: ${HOST_FRONTEND}
+
+      # 쿠키 설정 추가
+      COOKIE_DOMAIN_DOCKER: ${COOKIE_DOMAIN_DOCKER}
+      COOKIE_SECURE_MODE_DOCKER: ${COOKIE_SECURE_MODE_DOCKER}
+
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (SSL + 리버스 프록시 통합)
+  frontend:
+    image: batt-frontend:latest
+    container_name: react_frontend_ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # SSL 인증서 마운트
+      - /home/ubuntu/ssl/certbot/conf:/etc/letsencrypt:ro
+      - /home/ubuntu/ssl/certbot/www:/var/www/certbot:ro
+      - /home/ubuntu/img:/home/ubuntu/img:ro
+      
+    depends_on:
+      - backend
+      - certbot
+    networks:
+      - app-network
+    restart: unless-stopped
+    user: "0:0"
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+          gateway: 172.25.0.1
+
+volumes:
+  redis_data:

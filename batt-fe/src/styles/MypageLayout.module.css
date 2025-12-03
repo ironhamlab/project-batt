@@ -1,0 +1,25 @@
+.layout {
+  padding-left: 240px;
+  height: 100vh;
+  background-color: #fafafa;
+}
+
+.content {
+  padding: 2.5rem;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #212529;
+}

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ticket_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- QR 코드 카드 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:gravity="center">
+
+                <!-- QR 코드 이미지 -->
+                <ImageView
+                    android:id="@+id/qrCodeImageView"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@color/ticket_divider"
+                    android:scaleType="centerInside"/>
+
+                <!-- 예매번호 -->
+                <TextView
+                    android:id="@+id/reservationNumberText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T240101001"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ticket_text_primary"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- 안내 텍스트 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="입장 시 QR코드를 제시해 주세요"
+                    android:textSize="14sp"
+                    android:textColor="@color/ticket_text_secondary"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- 티켓 상세 정보 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="티켓 정보"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ticket_text_primary"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- 좌석 정보 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🎫 좌석"
+                        android:textSize="16sp"
+                        android:textColor="@color/ticket_text_secondary"/>
+
+                    <TextView
+                        android:id="@+id/seatText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="VIP석 A열 5번"
+                        android:textSize="16sp"
+                        android:textColor="@color/ticket_text_primary"
+                        android:gravity="end"/>
+
+                </LinearLayout>
+
+                <!-- 가격 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="💰 가격"
+                        android:textSize="16sp"
+                        android:textColor="@color/ticket_text_secondary"/>
+
+                    <TextView
+                        android:id="@+id/priceText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="150,000원"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/ticket_primary"
+                        android:gravity="end"/>
+
+                </LinearLayout>
+
+                <!-- 상태 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="📋 상태"
+                        android:textSize="16sp"
+                        android:textColor="@color/ticket_text_secondary"/>
+
+                    <TextView
+                        android:id="@+id/statusText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="예매완료"
+                        android:textSize="14sp"
+                        android:textColor="@color/ticket_primary"
+                        android:textStyle="bold"
+                        android:background="@drawable/status_background"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</ScrollView>

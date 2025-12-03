@@ -1,0 +1,26 @@
+# 소스 코드 (build 폴더만 필요)
+src/
+public/
+!build/
+
+# 의존성
+node_modules/
+npm-debug.log*
+
+# 환경 설정
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git 및 개발 도구
+.git/
+.gitignore
+*.md
+Dockerfile
+.dockerignore
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,113 @@
+# batt-be/src/main/resources/application-docker.yml
+spring:
+  application:
+    name: batt
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    database: postgresql
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # OAuth2 설정 (application-local.yml과 동일 구조)
+  security:
+    oauth2:
+      client:
+        provider:
+          kakao:
+            authorization-uri: ${OAUTH2.KAKAO.AUTHORIZATION-URL}
+            token-uri: ${OAUTH2.KAKAO.TOKEN-URL}
+            user-info-uri: ${OAUTH2.KAKAO.USER-INFO-URI}
+            jwk-set-uri: ${OAUTH2.KAKAO.OIDC-JWK-SET-URI}
+            user-name-attribute: sub
+          naver:
+            authorization-uri: ${OAUTH2.NAVER.AUTHORIZATION-URL}
+            token-uri: ${OAUTH2.NAVER.TOKEN-URL}
+            user-info-uri: ${OAUTH2.NAVER.USER-INFO-URI}
+            user-name-attribute: response
+        registration:
+          kakao:
+            authorization-grant-type: ${OAUTH2.KAKAO.GRANT-TYPE}
+            redirect-uri: ${OAUTH2.KAKAO.LOGIN-REDIRECT-URI}
+            client-name: Kakao
+            client-authentication-method: client_secret_post
+            client-id: ${OAUTH2.KAKAO.CLIENT-ID}
+            client-secret: ${OAUTH2.KAKAO.CLIENT-SECRET}
+            scope:
+              - openid
+              - name
+              - gender
+              - birthday
+              - birthyear
+              - phone_number
+              - account_email
+          naver:
+            authorization-grant-type: ${OAUTH2.NAVER.GRANT-TYPE}
+            redirect-uri: ${OAUTH2.NAVER.LOGIN-REDIRECT-URI}
+            client-name: Naver
+            client-authentication-method: client_secret_post
+            client-id: ${OAUTH2.NAVER.CLIENT-ID}
+            client-secret: ${OAUTH2.NAVER.CLIENT-SECRET}
+            scope:
+              - name
+              - gender
+              - birthday
+              - birthyear
+              - mobile
+              - email
+
+jwt:
+  secret: ${JWT.SECRET}
+
+host:
+  allowed-origins: ${HOST.ALLOWED-ORIGINS}
+  frontend: ${HOST.FRONTEND}
+
+cookie:
+  domain: ${COOKIE.DOMAIN.DOCKER}
+  secure-mode: ${COOKIE.SECURE-MODE.DOCKER}
+
+performance:
+  scheduler:
+    status-update-interval: ${PERFORMANCE.SCHEDULER.STATUS-UPDATE-INTERVAL:60000}
+    end-update-interval: ${PERFORMANCE.SCHEDULER.END-UPDATE-INTERVAL:60000}
+    batch-size: ${PERFORMANCE.SCHEDULER.BATCH-SIZE:100}
+
+# 헬스체크용 actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
+
+# logback-spring.xml용 설정만 추가 (패턴 제외)
+log:
+  config:
+    path: ./batt-be/logs
+    filename:
+      default: batt
+      error: batt-error

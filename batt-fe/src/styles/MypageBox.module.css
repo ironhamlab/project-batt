@@ -1,0 +1,55 @@
+.box {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.large {
+  grid-column: span 2;
+}
+
+.textContainer {
+  flex-grow: 1;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: #212529;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #868e96;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.bottomContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 1.5rem;
+}
+
+.link {
+  font-size: 0.9rem;
+  color: #495057;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link:hover {
+  color: #212529;
+}
+
+.iconWrapper {
+  margin-top: 40px;
+  color: #212529;
+}

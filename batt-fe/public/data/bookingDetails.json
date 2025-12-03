@@ -1,0 +1,74 @@
+[
+  {
+    "id": "T2771094300",
+    "posterUrl": "https://ticketimage.interpark.com/Play/image/large/L0/L0000123_p.gif",
+    "performanceTitle": "뮤지컬 <맘마미아!>",
+    "bookingNumber": "M251510069",
+    "venue": "LG아트센터 서울",
+    "bookingDate": "2025.06.29",
+    "bookerName": "김바른",
+    "viewingDate": "2025.07.19 19:00",
+    "cancellationDeadline": "2025.07.18 11:00 까지",
+    "quantity": 2,
+    "status": "예매완료",
+    "totalPrice": 608000,
+    "ticketPrice": 600000,
+    "bookingFee": 8000,
+    "seats": [
+      { "grade": "VIP", "seatNumber": "1층 8열 11", "price": 300000 },
+      { "grade": "VIP", "seatNumber": "1층 8열 12", "price": 300000 }
+    ],
+    "payment": {
+      "method": "카드",
+      "cardName": "국민카드/943646**********",
+      "installments": "일시불"
+    }
+  },
+  {
+    "id": "T2771094301",
+    "posterUrl": "https://ticketimage.interpark.com/Play/image/large/25/25005777_p.gif",
+    "performanceTitle": "뮤지컬 <위키드>",
+    "bookingNumber": "M251510070",
+    "venue": "블루스퀘어 신한카드홀",
+    "bookingDate": "2024.05.20",
+    "bookerName": "김바른",
+    "viewingDate": "2024.08.15 14:00",
+    "cancellationDeadline": "2024.06.14 11:00 까지",
+    "quantity": 1,
+    "status": "예매완료",
+    "totalPrice": 173000,
+    "ticketPrice": 170000,
+    "bookingFee": 3000,
+    "seats": [{ "grade": "R", "seatNumber": "1층 12열 4", "price": 170000 }],
+    "payment": {
+      "method": "카드",
+      "cardName": "신한카드/123456**********",
+      "installments": "일시불"
+    }
+  },
+  {
+    "id": "T2771094302",
+    "posterUrl": "https://ticketimage.interpark.com/Play/image/large/23/23012526_p.gif",
+    "performanceTitle": "뮤지컬 <레미제라블>",
+    "bookingNumber": "M251510071",
+    "venue": "마스터카드홀",
+    "bookingDate": "2025.07.20",
+    "bookerName": "김바른",
+    "viewingDate": "2025.08.05 20:00",
+    "cancellationDeadline": "2025.08.04 11:00 까지",
+    "quantity": 2,
+    "status": "취소",
+    "totalPrice": 306000,
+    "ticketPrice": 300000,
+    "bookingFee": 6000,
+    "seats": [
+      { "grade": "VIP", "seatNumber": "1층 3열 7", "price": 150000 },
+      { "grade": "VIP", "seatNumber": "1층 3열 8", "price": 150000 }
+    ],
+    "payment": {
+      "method": "카드",
+      "cardName": "현대카드/789123**********",
+      "installments": "일시불"
+    }
+  }
+]

@@ -1,0 +1,341 @@
+/* 모달 오버레이 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+/* 모달 컨테이너 */
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  font-family: "Pretendard", sans-serif;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* 닫기 버튼 */
+.closeButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #f8f9fa;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.closeButton:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+/* 모달 헤더 */
+.modalHeader {
+  background: linear-gradient(135deg, #4a4a8c, #6366f1);
+  color: white;
+  padding: 1rem 1.5rem;
+  text-align: center;
+}
+
+.modalTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+}
+
+/* 카드 공통 스타일 */
+.performanceCard,
+.bidCard,
+.summaryCard,
+.termsCard {
+  margin: 0;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cardHeader {
+  background: #f8f9fa;
+  color: #333;
+  padding: 0.5rem 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.cardContent {
+  padding: 1rem 1.5rem;
+}
+
+/* 공연 정보 카드 */
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.value {
+  color: #333;
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+  margin-left: 1rem;
+  word-break: break-word;
+  font-size: 0.9rem;
+}
+
+/* 입찰 정보 카드 */
+.bidInfo {
+  margin-bottom: 1rem;
+}
+
+.bidRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.bidRow:last-child {
+  border-bottom: none;
+}
+
+.bidLabel {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.bidValue {
+  color: #e53e3e;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.inputSection {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.875rem;
+  border: 1px solid #e9ecef;
+  margin-top: 0.5rem;
+}
+
+.inputLabel {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.battInput {
+  width: 100%;
+  padding: 0.625rem;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  background: white;
+}
+
+.battInput:focus {
+  outline: none;
+  border-color: #4a4a8c;
+  box-shadow: 0 0 0 3px rgba(74, 74, 140, 0.1);
+}
+
+.inputHint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* 요약 카드 */
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.summaryRow:last-child {
+  border-bottom: none;
+}
+
+.summaryLabel {
+  font-weight: 600;
+  color: #555;
+  font-size: 1rem;
+}
+
+.summaryValue {
+  color: #333;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+/* 약관 카드 */
+.termsContent {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.875rem;
+}
+
+.termItem {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 0.6rem;
+}
+
+.termItem:last-child {
+  margin-bottom: 0;
+}
+
+.termIcon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.termItem p {
+  margin: 0;
+  color: #555;
+  line-height: 1.4;
+  font-size: 0.85rem;
+}
+
+/* 버튼 컨테이너 */
+.buttonContainer {
+  padding: 0.875rem 1.5rem 1rem;
+  text-align: center;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.submitButton {
+  background: linear-gradient(135deg, #4a4a8c, #6366f1);
+  color: white;
+  border: none;
+  padding: 0.625rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  box-shadow: 0 2px 8px rgba(74, 74, 140, 0.3);
+}
+
+.submitButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3a3a7c, #5856eb);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 74, 140, 0.4);
+}
+
+.submitButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .modalContent {
+    margin: 1rem;
+    max-width: none;
+  }
+  
+  .modalHeader {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .modalTitle {
+    font-size: 1.3rem;
+  }
+  
+  .cardContent {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .buttonContainer {
+    padding: 1rem 1.5rem;
+  }
+  
+  .submitButton {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    margin: 0.5rem;
+  }
+  
+  .modalHeader {
+    padding: 1rem 1.25rem;
+  }
+  
+  .modalTitle {
+    font-size: 1.2rem;
+  }
+  
+  .modalSubtitle {
+    font-size: 0.85rem;
+  }
+  
+  .cardContent {
+    padding: 1rem 1.25rem;
+  }
+  
+  .buttonContainer {
+    padding: 1rem 1.25rem;
+  }
+}

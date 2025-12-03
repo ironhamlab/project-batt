@@ -1,0 +1,97 @@
+spring:
+  config:
+    import:
+      - application-secret.yml
+    activate:
+      on-profile: local
+
+  # Local DB config
+  datasource:
+    url: ${DATABASE.LOCAL.url}
+    username: ${DATABASE.LOCAL.username}
+    password: ${DATABASE.LOCAL.password}
+    driver-class-name: ${DATABASE.LOCAL.driver-class-name}
+
+  data:
+    redis:
+      host: ${REDIS.LOCAL.host}
+      port: ${REDIS.LOCAL.port}
+
+  # Local JPA config
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      client:
+        provider:
+          kakao:
+            authorization-uri: ${OAUTH2.KAKAO.AUTHORIZATION-URL}
+            token-uri: ${OAUTH2.KAKAO.TOKEN-URL}
+            user-info-uri: ${OAUTH2.KAKAO.USER-INFO-URI}
+            jwk-set-uri: ${OAUTH2.KAKAO.OIDC-JWK-SET-URI}
+            user-name-attribute: sub
+          naver:
+            authorization-uri: ${OAUTH2.NAVER.AUTHORIZATION-URL}
+            token-uri: ${OAUTH2.NAVER.TOKEN-URL}
+            user-info-uri: ${OAUTH2.NAVER.USER-INFO-URI}
+            user-name-attribute: response
+        registration:
+          kakao:
+            authorization-grant-type: ${OAUTH2.KAKAO.GRANT-TYPE}
+            redirect-uri: ${OAUTH2.KAKAO.LOGIN-REDIRECT-URI}
+            client-name: Kakao
+            client-authentication-method: client_secret_post
+            client-id: ${OAUTH2.KAKAO.CLIENT-ID}
+            client-secret: ${OAUTH2.KAKAO.CLIENT-SECRET-KEY}
+            scope:
+              - openid              # OIDC
+              - name                # 이름
+              - gender              # 성별
+              - birthday            # 생년월일
+              - birthyear           # 출생년도
+              - phone_number        # 카카오계정(전화번호)
+              - account_email       # 카카오계정(이메일)
+          naver:
+            authorization-grant-type: ${OAUTH2.NAVER.GRANT-TYPE}
+            redirect-uri: ${OAUTH2.NAVER.LOGIN-REDIRECT-URI}
+            client-name: Naver
+            client-authentication-method: client_secret_post
+            client-id: ${OAUTH2.NAVER.CLIENT-ID}
+            client-secret: ${OAUTH2.NAVER.CLIENT-SECRET-KEY}
+            scope:
+              - name                # 이름
+              - gender              # 성별
+              - birthday            # 생년월일
+              - birthyear           # 출생년도
+              - mobile              # 네이버계정(전화번호)
+              - email               # 네이버계정(이메일)
+
+jwt:
+  secret: ${JWT.SECRET}
+
+host:
+  allowed-origins: ${HOST.ALLOWED-ORIGINS}
+  frontend: ${HOST.FRONTEND}
+
+# Logging config
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: INFO
+
+cookie:
+  domain: ${COOKIE.DOMAIN.LOCAL}
+  secure-mode: ${COOKIE.SECURE-MODE.LOCAL}
+
+performance:
+  scheduler:
+    status-update-interval: ${PERFORMANCE.SCHEDULER.STATUS-UPDATE-INTERVAL:60000}
+    end-update-interval: ${PERFORMANCE.SCHEDULER.END-UPDATE-INTERVAL:60000}
+    batch-size: ${PERFORMANCE.SCHEDULER.BATCH-SIZE:100}

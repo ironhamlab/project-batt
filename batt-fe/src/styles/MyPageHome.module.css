@@ -1,0 +1,56 @@
+.container {
+  width: 750px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #212529;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  grid-template-rows: auto;
+}
+
+.welcomeContainer {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.welcomeTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.emailContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.providerIcon {
+  height: 1em;
+  width: auto;
+}
+
+.email {
+  color: #868e96;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.logoutButton {
+  color: #868e96;
+  text-decoration: none;
+  font-size: 0.9rem;
+  align-self: flex-end;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}

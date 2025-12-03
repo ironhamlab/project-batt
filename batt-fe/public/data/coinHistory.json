@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "amount": 1000,
+    "description": "회원가입 축하 포인트",
+    "logCreatedAt": "20250725",
+    "remainCoin": 10000,
+    "status": "EARNED"
+  },
+  {
+    "id": 2,
+    "amount": 300,
+    "description": "정가 양도 시스템 이용",
+    "logCreatedAt": "20250724",
+    "remainCoin": 9700,
+    "status": "SPENT"
+  },
+  {
+    "id": 3,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250723",
+    "remainCoin": 9705,
+    "status": "EARNED"
+  },
+  {
+    "id": 4,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250722",
+    "remainCoin": 9710,
+    "status": "EARNED"
+  },
+  {
+    "id": 5,
+    "amount": 500,
+    "description": "정가 양도 시스템 이용",
+    "logCreatedAt": "20250721",
+    "remainCoin": 9210,
+    "status": "SPENT"
+  },
+  {
+    "id": 6,
+    "amount": 50,
+    "description": "출석 체크 이벤트",
+    "logCreatedAt": "20250720",
+    "remainCoin": 9260,
+    "status": "EARNED"
+  },
+  {
+    "id": 7,
+    "amount": 50,
+    "description": "출석 체크 이벤트",
+    "logCreatedAt": "20250719",
+    "remainCoin": 9310,
+    "status": "EARNED"
+  },
+  {
+    "id": 8,
+    "amount": 200,
+    "description": "정가 양도 시스템 이용",
+    "logCreatedAt": "20250718",
+    "remainCoin": 9110,
+    "status": "SPENT"
+  },
+  {
+    "id": 9,
+    "amount": 50,
+    "description": "출석 체크 이벤트",
+    "logCreatedAt": "20250717",
+    "remainCoin": 9160,
+    "status": "EARNED"
+  },
+  {
+    "id": 10,
+    "amount": 50,
+    "description": "출석 체크 이벤트",
+    "logCreatedAt": "20250716",
+    "remainCoin": 9210,
+    "status": "EARNED"
+  },
+  {
+    "id": 11,
+    "amount": 50,
+    "description": "출석 체크 이벤트",
+    "logCreatedAt": "20250715",
+    "remainCoin": 9260,
+    "status": "EARNED"
+  },
+  {
+    "id": 12,
+    "amount": 150,
+    "description": "정가 양도 시스템 이용",
+    "logCreatedAt": "20250714",
+    "remainCoin": 9110,
+    "status": "SPENT"
+  },
+  {
+    "id": 13,
+    "amount": 50,
+    "description": "출석 체크 이벤트",
+    "logCreatedAt": "20250713",
+    "remainCoin": 9160,
+    "status": "EARNED"
+  },
+  {
+    "id": 14,
+    "amount": 50,
+    "description": "출석 체크 이벤트",
+    "logCreatedAt": "20250712",
+    "remainCoin": 9210,
+    "status": "EARNED"
+  },
+  {
+    "id": 15,
+    "amount": 1000,
+    "description": "정가 양도 시스템 이용",
+    "logCreatedAt": "20250711",
+    "remainCoin": 8210,
+    "status": "SPENT"
+  },
+  {
+    "id": 16,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250710",
+    "remainCoin": 8215,
+    "status": "EARNED"
+  },
+  {
+    "id": 17,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250709",
+    "remainCoin": 8220,
+    "status": "EARNED"
+  },
+  {
+    "id": 18,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250708",
+    "remainCoin": 8225,
+    "status": "EARNED"
+  },
+  {
+    "id": 19,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250707",
+    "remainCoin": 8230,
+    "status": "EARNED"
+  },
+  {
+    "id": 20,
+    "amount": 700,
+    "description": "정가 양도 시스템 이용",
+    "logCreatedAt": "20250706",
+    "remainCoin": 7530,
+    "status": "SPENT"
+  },
+  {
+    "id": 21,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250705",
+    "remainCoin": 7535,
+    "status": "EARNED"
+  },
+  {
+    "id": 22,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250704",
+    "remainCoin": 7540,
+    "status": "EARNED"
+  },
+  {
+    "id": 23,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250703",
+    "remainCoin": 7545,
+    "status": "EARNED"
+  },
+  {
+    "id": 24,
+    "amount": 2000,
+    "description": "친구 초대 이벤트",
+    "logCreatedAt": "20250702",
+    "remainCoin": 9545,
+    "status": "EARNED"
+  },
+  {
+    "id": 25,
+    "amount": 5,
+    "description": "리뷰 작성",
+    "logCreatedAt": "20250701",
+    "remainCoin": 9550,
+    "status": "EARNED"
+  }
+]

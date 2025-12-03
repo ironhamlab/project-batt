@@ -1,0 +1,38 @@
+spring:
+  config:
+    import:
+      - application-secret.yml
+    activate:
+      on-profile: dev
+
+  # Dev DB config
+  datasource:
+    url: ${DATABASE.DEV.url}
+    username: ${DATABASE.DEV.username}
+    password: ${DATABASE.DEV.password}
+    driver-class-name: ${DATABASE.DEV.driver-class-name}
+
+  data:
+    redis:
+      host: ${REDIS.DEV.host}
+      port: ${REDIS.DEV.port}
+
+  # Dev JPA config
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+host:
+  backend: ${HOST.DEV.BACKEND_HOST}
+  frontend: ${HOST.DEV.FRONTEND_HOST}
+
+# Logging config
+logging:
+  level:
+    root: WARN
+    org.hibernate.SQL: WARN

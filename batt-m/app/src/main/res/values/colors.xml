@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="naver_green">#03C75A</color>
+    <color name="kakao_yellow">#FEE500</color>
+    <color name="verification_blue">#0064FF</color>
+    
+    <!-- 티켓 화면 색상 -->
+    <color name="ticket_primary">#2196F3</color>
+    <color name="ticket_background">#F5F5F5</color>
+    <color name="ticket_card_background">#FFFFFF</color>
+    <color name="ticket_text_primary">#212121</color>
+    <color name="ticket_text_secondary">#757575</color>
+    <color name="ticket_divider">#E0E0E0</color>
+</resources>

@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.leftColumn {
+  width: 70%;
+  max-width: 900px;
+}
+
+.rightColumn {
+  width: 30%;
+  max-width: 400px;
+}
+
+.detailSection {
+  margin-top: 50px;
+}
+
+.stickyWrapper {
+  position: sticky;
+  top: 20px;
+}

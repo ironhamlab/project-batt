@@ -1,0 +1,214 @@
+.container {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  width: 310px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.calendar {
+  width: 100%;
+}
+
+.monthHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.navButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+.weekdays,
+.datesGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+}
+
+.weekdays {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.dateCell {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin: 10px auto;
+  cursor: pointer;
+  font-size: 16px;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dateCell:hover {
+  background-color: #f0f0f0;
+}
+
+.dateCell.selectable {
+  font-weight: 600;
+  color: #333;
+}
+
+.dateCell.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.dateCell.disabled:hover {
+  background-color: transparent;
+}
+
+.dateCell.selected {
+  background-color: #00a99d;
+  color: white;
+  font-weight: 700;
+}
+
+.dateCell.selected:hover {
+  background-color: #00a99d;
+}
+
+.separator {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 30px 0;
+}
+
+.sessionButtons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.timeButton {
+  width: 130px;
+  padding: 14px;
+  border-radius: 12px;
+  justify-content: space-between;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.timeButton.selected {
+  background-color: #4a4a8c;
+  color: #fff;
+  border-color: #4a4a8c;
+  font-weight: 600;
+}
+
+.navButton:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.noSessionText {
+  color: #888;
+  font-size: 14px;
+  text-align: center;
+  width: 100%;
+}
+
+.reservationButton {
+  background-color: #fff;
+  color: #4a4a8c;
+  border-radius: 12px;
+  border: 2px solid #4a4a8c;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+  padding: 14px;
+  text-align: center;
+}
+
+.reservationButtonDisabled {
+  background-color: #ffffff;
+  color: #4a4a8c;
+  border: 1px solid #4a4a8c;
+  cursor: not-allowed;
+}
+
+.dDayContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.dDay {
+  font-size: 40px;
+  font-weight: 700;
+  color: #ff4d4d;
+}
+
+.openInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.openLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.openDate {
+  font-size: 14px;
+  color: #888;
+}
+
+.preSaleNotice {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.preSaleButton {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background-color: #e0e0e0;
+  color: #888;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: not-allowed;
+}

@@ -1,0 +1,63 @@
+/* 전체 페이지 컨테이너 */
+.pageContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* 공연 정보 섹션 */
+.performanceSection {
+  flex: 0 0 400px;
+}
+
+.loadingContainer {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.errorContainer {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #c53030;
+}
+
+/* 양도 티켓 섹션 */
+.transferSection {
+  flex: 1;
+  min-width: 0; /* flexbox 텍스트 overflow 방지 */
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
+  .pageContainer {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .performanceSection {
+    flex: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageContainer {
+    padding: 0.5rem;
+  }
+}

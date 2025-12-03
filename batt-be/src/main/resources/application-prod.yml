@@ -1,0 +1,38 @@
+spring:
+  config:
+    import:
+      - application-secret.yml
+    activate:
+      on-profile: prod
+
+  # Prod DB config
+  datasource:
+    url: ${DATABASE.PROD.url}
+    username: ${DATABASE.PROD.username}
+    password: ${DATABASE.PROD.password}
+    driver-class-name: ${DATABASE.PROD.driver-class-name}
+
+  data:
+    redis:
+      host: ${REDIS.PROD.host}
+      port: ${REDIS.PROD.port}
+
+  # Prod JPA config
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+host:
+  backend: ${HOST.PROD.BACKEND_HOST}
+  frontend: ${HOST.PROD.FRONTEND_HOST}
+
+# Logging config
+logging:
+  level:
+    root: WARN
+    org.hibernate.SQL: WARN

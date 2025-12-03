@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">BATTicket</string>
+
+    <string name="signin_kakao">카카오로 로그인하기</string>
+    <string name="signin_naver">네이버로 로그인하기</string>
+    
+    <!-- 본인인증 화면 -->
+    <string name="verification_title">본인인증이 필요해요</string>
+    <string name="verification_subtitle">안전한 티켓 예매를 위해\n본인인증을 완료해 주세요</string>
+    <string name="verification_description">• 1인 1계정 원칙\n• 개인정보는 안전하게 보호됩니다</string>
+    <string name="btn_start_verification">본인인증 하러가기</string>
+</resources>

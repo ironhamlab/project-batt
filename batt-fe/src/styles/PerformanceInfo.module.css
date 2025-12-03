@@ -1,0 +1,67 @@
+.card {
+  background-color: #fff;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease-in-out;
+  display: flex;
+}
+
+.cardSmall {
+  width: 450px;
+  flex-direction: column;
+}
+
+.cardSmall .info {
+  padding-top: 60px;
+}
+
+.cardLarge {
+  width: 850px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.cardLarge .posterImage {
+  flex-shrink: 0;
+}
+
+.cardLarge .info {
+  flex-grow: 1;
+  padding-top: 10px;
+  padding-left: 40px;
+}
+
+.posterImage {
+  width: 270px;
+  display: block;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 4px 0;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 23px 40px;
+  align-items: start;
+  color: #333;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.label {
+  font-weight: 700;
+  color: #000;
+  text-align: left;
+  font-size: 20px;
+}
+
+.priceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

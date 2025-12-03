@@ -1,0 +1,14 @@
+### IntelliJ IDEA ###
+.idea
+
+
+# 인프라 관련 추가-------------------
+# Docker 환경 설정
+.env.production
+.env.local
+.env.staging
+.env
+
+# Docker 관련
+.docker/
+docker-compose.override.yml

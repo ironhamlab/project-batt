@@ -1,0 +1,130 @@
+{
+  "pageInfo": {
+    "totalElements": 100,
+    "totalPages": 6,
+    "currentPage": 1,
+    "pageSize": 10
+  },
+  "data": [
+    {
+      "id": 1,
+      "title": "(공연임박순)뮤지컬 <레미제라블>",
+      "venueName": "예술의전당 오페라극장",
+      "posterImageUrl": "https://cdn.example.com/poster/lesmis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-08-01",
+      "performanceEndDate": "2025-09-15"
+    },
+    {
+      "id": 2,
+      "title": "연극 <오이디푸스>",
+      "venueName": "국립극장 해오름극장",
+      "posterImageUrl": "https://cdn.example.com/poster/oedipus.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-07-20",
+      "performanceEndDate": "2025-08-10"
+    },
+    {
+      "id": 3,
+      "title": "뮤지컬 <멤피스>",
+      "venueName": "충무아트센터 대극장",
+      "posterImageUrl": "http://example.com/poster/memphis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-06-17",
+      "performanceEndDate": "2025-09-21"
+    },
+    {
+      "id": 4,
+      "title": "뮤지컬 <레미제라블>",
+      "venueName": "예술의전당 오페라극장",
+      "posterImageUrl": "https://cdn.example.com/poster/lesmis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-08-01",
+      "performanceEndDate": "2025-09-15"
+    },
+    {
+      "id": 5,
+      "title": "연극 <오이디푸스>",
+      "venueName": "국립극장 해오름극장",
+      "posterImageUrl": "https://cdn.example.com/poster/oedipus.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-07-20",
+      "performanceEndDate": "2025-08-10"
+    },
+    {
+      "id": 6,
+      "title": "뮤지컬 <멤피스>",
+      "venueName": "충무아트센터 대극장",
+      "posterImageUrl": "http://example.com/poster/memphis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-06-17",
+      "performanceEndDate": "2025-09-21"
+    },
+    {
+      "id": 7,
+      "title": "(인기순)뮤지컬 <레미제라블>",
+      "venueName": "예술의전당 오페라극장",
+      "posterImageUrl": "https://cdn.example.com/poster/lesmis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-08-01",
+      "performanceEndDate": "2025-09-15"
+    },
+    {
+      "id": 8,
+      "title": "연극 <오이디푸스>",
+      "venueName": "국립극장 해오름극장",
+      "posterImageUrl": "https://cdn.example.com/poster/oedipus.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-07-20",
+      "performanceEndDate": "2025-08-10"
+    },
+    {
+      "id": 9,
+      "title": "뮤지컬 <멤피스>",
+      "venueName": "충무아트센터 대극장",
+      "posterImageUrl": "http://example.com/poster/memphis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-06-17",
+      "performanceEndDate": "2025-09-21"
+    },
+    {
+      "id": 10,
+      "title": "뮤지컬 <레미제라블>",
+      "venueName": "예술의전당 오페라극장",
+      "posterImageUrl": "https://cdn.example.com/poster/lesmis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-08-01",
+      "performanceEndDate": "2025-09-15"
+    },
+    {
+      "id": 11,
+      "title": "연극 <오이디푸스>",
+      "venueName": "국립극장 해오름극장",
+      "posterImageUrl": "https://cdn.example.com/poster/oedipus.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-07-20",
+      "performanceEndDate": "2025-08-10"
+    },
+    {
+      "id": 12,
+      "title": "뮤지컬 <멤피스>",
+      "venueName": "충무아트센터 대극장",
+      "posterImageUrl": "http://example.com/poster/memphis.jpg",
+      "status": "OPEN",
+      "bookingOpenDate": "2025-07-17T18:00:00",
+      "performanceStartDate": "2025-06-17",
+      "performanceEndDate": "2025-09-21"
+    }
+  ]
+}

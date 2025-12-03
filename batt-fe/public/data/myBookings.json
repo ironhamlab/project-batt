@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "bookingDate": "2025.07.22",
+    "bookingNumber": "T2771094300",
+    "performanceTitle": "뮤지컬(위키드) 내한공연(WICKED ...",
+    "viewingDate": "2025.07.22",
+    "quantity": 1,
+    "status": "취소"
+  },
+  {
+    "id": 2,
+    "bookingDate": "2025.07.21",
+    "bookingNumber": "T2771094301",
+    "performanceTitle": "뮤지컬(위키드) 내한공연(WICKED ...",
+    "viewingDate": "2025.07.21",
+    "quantity": 2,
+    "status": "예매완료"
+  },
+  {
+    "id": 3,
+    "bookingDate": "2025.07.20",
+    "bookingNumber": "T2771094302",
+    "performanceTitle": "뮤지컬(레미제라블)",
+    "viewingDate": "2025.08.05",
+    "quantity": 2,
+    "status": "예매완료"
+  },
+  {
+    "id": 4,
+    "bookingDate": "2025.07.19",
+    "bookingNumber": "T2771094303",
+    "performanceTitle": "연극(아트)",
+    "viewingDate": "2025.07.30",
+    "quantity": 3,
+    "status": "취소"
+  },
+  {
+    "id": 5,
+    "bookingDate": "2025.07.18",
+    "bookingNumber": "T2771094304",
+    "performanceTitle": "콘서트(아이유)",
+    "viewingDate": "2025.09.10",
+    "quantity": 1,
+    "status": "예매완료"
+  },
+  {
+    "id": 6,
+    "bookingDate": "2025.07.17",
+    "bookingNumber": "T2771094305",
+    "performanceTitle": "뮤지컬(오페라의 유령)",
+    "viewingDate": "2025.08.15",
+    "quantity": 2,
+    "status": "예매완료"
+  },
+  {
+    "id": 7,
+    "bookingDate": "2025.07.16",
+    "bookingNumber": "T2771094306",
+    "performanceTitle": "뮤지컬(시카고)",
+    "viewingDate": "2025.08.20",
+    "quantity": 4,
+    "status": "취소"
+  },
+  {
+    "id": 8,
+    "bookingDate": "2025.07.15",
+    "bookingNumber": "T2771094307",
+    "performanceTitle": "콘서트(싸이 흠뻑쇼)",
+    "viewingDate": "2025.08.11",
+    "quantity": 2,
+    "status": "예매완료"
+  },
+  {
+    "id": 9,
+    "bookingDate": "2025.07.14",
+    "bookingNumber": "T2771094308",
+    "performanceTitle": "뮤지컬(위키드) 내한공연(WICKED ...",
+    "viewingDate": "2025.07.22",
+    "quantity": 1,
+    "status": "취소"
+  },
+  {
+    "id": 10,
+    "bookingDate": "2025.07.13",
+    "bookingNumber": "T2771094309",
+    "performanceTitle": "뮤지컬(위키드) 내한공연(WICKED ...",
+    "viewingDate": "2025.07.29",
+    "quantity": 2,
+    "status": "예매완료"
+  },
+  {
+    "id": 11,
+    "bookingDate": "2025.07.12",
+    "bookingNumber": "T2771094310",
+    "performanceTitle": "뮤지컬(레미제라블)",
+    "viewingDate": "2025.09.01",
+    "quantity": 1,
+    "status": "예매완료"
+  }
+]

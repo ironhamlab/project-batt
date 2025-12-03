@@ -1,0 +1,100 @@
+{
+  "pageInfo": {
+    "totalElements": 100,
+    "totalPages": 5,
+    "currentPage": 1,
+    "pageSize": 10
+  },
+  "performances": [
+    {
+      "id": 1,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿햄릿",
+      "venueName": "세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관세종문화회관",
+      "performanceStartDate": "2025-09-21",
+      "performanceEndDate": "2025-09-21",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 2,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-09-21",
+      "performanceEndDate": "2025-09-21",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 3,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-09-21",
+      "performanceEndDate": "2025-09-21",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 4,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-07-22",
+      "performanceEndDate": "2025-07-23",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 5,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-07-22",
+      "performanceEndDate": "2025-07-23",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 6,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-07-22",
+      "performanceEndDate": "2025-07-23",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 7,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-07-22",
+      "performanceEndDate": "2025-07-23",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 8,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-07-22",
+      "performanceEndDate": "2025-07-23",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 9,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-07-22",
+      "performanceEndDate": "2025-07-23",
+      "transferTicketCount": 7
+    },
+    {
+      "id": 10,
+      "posterImageUrl": "/src/assets/dummyPoster.png",
+      "title": "햄릿",
+      "venueName": "세종문화회관",
+      "performanceStartDate": "2025-07-22",
+      "performanceEndDate": "2025-07-23",
+      "transferTicketCount": 7
+    }
+  ]
+}

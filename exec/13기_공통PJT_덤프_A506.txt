@@ -1,0 +1,1471 @@
+-- PostgreSQL DDL Script
+-- Drop tables if exists (역순으로 삭제)
+DROP TABLE IF EXISTS transfer CASCADE;
+DROP TABLE IF EXISTS seat CASCADE;
+DROP TABLE IF EXISTS review_report CASCADE;
+DROP TABLE IF EXISTS review CASCADE;
+DROP TABLE IF EXISTS refund CASCADE;
+DROP TABLE IF EXISTS performance_schedule CASCADE;
+DROP TABLE IF EXISTS performance CASCADE;
+DROP TABLE IF EXISTS payment CASCADE;
+DROP TABLE IF EXISTS member CASCADE;
+DROP TABLE IF EXISTS coin CASCADE;
+DROP TABLE IF EXISTS booking_seat CASCADE;
+DROP TABLE IF EXISTS booking CASCADE;
+DROP TABLE IF EXISTS bid CASCADE;
+DROP TABLE IF EXISTS admin_action_log CASCADE;
+
+-- Create tables
+CREATE TABLE admin_action_log
+(
+    id          BIGSERIAL PRIMARY KEY,
+    admin_id    BIGINT NOT NULL,
+    action_type VARCHAR(255) CHECK (action_type IN ('BLOCK_REVIEW', 'CREATE_PERFORMANCE', 'UPDATE_PERFORMANCE')),
+    description VARCHAR(255),
+    target_type VARCHAR(255) CHECK (target_type IN ('REVIEW', 'PERFORMANCE', 'USER')),
+    created_at  TIMESTAMPTZ,
+    updated_at  TIMESTAMPTZ
+);
+
+CREATE TABLE bid
+(
+    id          BIGSERIAL PRIMARY KEY,
+    bidder_id   BIGINT NOT NULL,
+    transfer_id BIGINT NOT NULL,
+    bid_amount  INTEGER,
+    created_at  TIMESTAMPTZ,
+    updated_at  TIMESTAMPTZ
+);
+
+CREATE TABLE booking
+(
+    id                      BIGSERIAL PRIMARY KEY,
+    member_id               BIGINT       NOT NULL,
+    performance_schedule_id BIGINT       NOT NULL,
+    order_id                VARCHAR(255) NOT NULL UNIQUE,
+    payment_key             VARCHAR(255),
+    payment_method          VARCHAR(255) CHECK (payment_method IN ('TOSS')),
+    status                  VARCHAR(255) CHECK (status IN ('PENDING', 'CONFIRMED', 'TRANSFER_PENDING', 'USER_CANCELLED', 'TRANSFER_FAILED_AUTO_CANCELLED', 'TRANSFERRED')),
+    seat_count              INTEGER,
+    total_amount            INTEGER,
+    cancellation_fee        INTEGER,
+    cancelled_date          TIMESTAMPTZ,
+    created_at              TIMESTAMPTZ,
+    updated_at              TIMESTAMPTZ
+);
+
+CREATE TABLE booking_seat
+(
+    id             BIGSERIAL PRIMARY KEY,
+    booking_id     BIGINT       NOT NULL,
+    seat_id        BIGINT       NOT NULL,
+    booking_number VARCHAR(255) NOT NULL UNIQUE,
+    price          INTEGER,
+    status         VARCHAR(255) CHECK (status IN ('RESERVED', 'CANCELLED')),
+    created_at     TIMESTAMPTZ,
+    updated_at     TIMESTAMPTZ
+);
+
+CREATE TABLE coin
+(
+    id               BIGSERIAL PRIMARY KEY,
+    user_id          BIGINT NOT NULL,
+    transaction_type VARCHAR(255) CHECK (transaction_type IN
+                                         ('SIGN_UP', 'REVIEW', 'TRANSFER_SUCCESS', 'TRANSFER_FAIL', 'BID_SUCCESS', 'BID_FAIL')),
+    amount           INTEGER,
+    remain_coin      INTEGER,
+    description      VARCHAR(255),
+    created_at       TIMESTAMPTZ,
+    updated_at       TIMESTAMPTZ
+);
+
+CREATE TABLE member
+(
+    id             BIGSERIAL PRIMARY KEY,
+    email          VARCHAR(255) NOT NULL UNIQUE,
+    name           VARCHAR(255) NOT NULL,
+    phone_number   VARCHAR(255),
+    birth          VARCHAR(255),
+    sex            VARCHAR(255) CHECK (sex IN ('MAN', 'WOMAN')),
+    provider_type  VARCHAR(255) CHECK (provider_type IN ('KAKAO', 'NAVER')),
+    provider_id    VARCHAR(255),
+    role           VARCHAR(255) CHECK (role IN ('USER', 'ADMIN')),
+    coin_balance   INTEGER,
+    is_active      BOOLEAN,
+    created_at     TIMESTAMPTZ,
+    updated_at     TIMESTAMPTZ,
+    deleted_at     TIMESTAMPTZ
+);
+
+CREATE TABLE payment
+(
+    id          BIGSERIAL PRIMARY KEY,
+    booking_id  BIGINT       NOT NULL UNIQUE,
+    payment_key VARCHAR(255) NOT NULL UNIQUE,
+    method      VARCHAR(255) CHECK (method IN ('TOSS')),
+    status      VARCHAR(255) CHECK (status IN ('PENDING', 'COMPLETED', 'CANCELLED', 'FAILED')),
+    amount      INTEGER,
+    created_at  TIMESTAMPTZ,
+    updated_at  TIMESTAMPTZ
+);
+
+CREATE TABLE performance
+(
+    id                     BIGSERIAL PRIMARY KEY,
+    title                  VARCHAR(255) NOT NULL,
+    description            TEXT,
+    genre                  VARCHAR(255) CHECK (genre IN ('MUSICAL', 'CONCERT', 'THEATER', 'DANCE', 'CLASSIC')),
+    venue_name             VARCHAR(255),
+    venue_address          VARCHAR(255),
+    poster_image_url       VARCHAR(255),
+    description_url        VARCHAR(255),
+    duration_minute        INTEGER,
+    age_restriction        INTEGER,
+    status                 VARCHAR(255) CHECK (status IN ('SCHEDULE', 'OPEN', 'END')),
+    performance_start_date TIMESTAMP,
+    performance_end_date   TIMESTAMP,
+    booking_open_date      TIMESTAMP,
+    created_at             TIMESTAMPTZ,
+    updated_at             TIMESTAMPTZ
+);
+
+CREATE TABLE performance_schedule
+(
+    id               BIGSERIAL PRIMARY KEY,
+    performance_id   BIGINT NOT NULL,
+    performance_date DATE,
+    performance_time TIME,
+    status           VARCHAR(255) CHECK (status IN ('SCHEDULED', 'CANCELLED', 'COMPLETED')),
+    total_seat       INTEGER,
+    available_seat   INTEGER,
+    created_at       TIMESTAMPTZ,
+    updated_at       TIMESTAMPTZ
+);
+
+CREATE TABLE refund
+(
+    id               BIGSERIAL PRIMARY KEY,
+    payment_id       BIGINT NOT NULL UNIQUE,
+    status           VARCHAR(255) CHECK (status IN ('PENDING', 'COMPLETED', 'FAILED')),
+    refund_amount    INTEGER,
+    cancellation_fee INTEGER,
+    reason           VARCHAR(255),
+    created_at       TIMESTAMPTZ,
+    updated_at       TIMESTAMPTZ
+);
+
+-- seat 테이블
+CREATE TABLE seat (
+    id BIGSERIAL PRIMARY KEY,
+    performance_schedule_id BIGINT NOT NULL,
+    number INTEGER NOT NULL,
+    grade VARCHAR(255) CHECK (grade IN ('VIP', 'R', 'S', 'A', 'B')),
+    zone VARCHAR(255),
+    floor INTEGER,
+    row INTEGER,
+    x INTEGER,
+    y INTEGER,
+    price INTEGER,
+    status VARCHAR(255) CHECK (status IN ('AVAILABLE', 'RESERVED')),
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+);
+
+CREATE TABLE review
+(
+    id             BIGSERIAL PRIMARY KEY,
+    user_id        BIGINT           NOT NULL,
+    performance_id BIGINT           NOT NULL,
+    booking_id     BIGINT           NOT NULL,
+    content        TEXT,
+    rating         DOUBLE PRECISION NOT NULL,
+    created_at     TIMESTAMPTZ,
+    updated_at     TIMESTAMPTZ
+);
+
+CREATE TABLE review_report
+(
+    id             BIGSERIAL PRIMARY KEY,
+    reporter_id    BIGINT NOT NULL,
+    review_id      BIGINT NOT NULL,
+    report_reason  VARCHAR(255) CHECK (report_reason IN
+                                       ('OFF_TOPIC', 'ILLEGAL_CONTENT', 'FALSE_INFORMATION', 'SPAM_OR_ADVERTISEMENT',
+                                        'INAPPROPRIATE_LANGUAGE', 'HARASSMENT_OR_DEFAMATION', 'PERSONAL_INFORMATION_EXPOSURE',
+                                        'OTHER')),
+    report_content VARCHAR(255),
+    status         VARCHAR(255) CHECK (status IN ('PENDING', 'PROCESSED', 'REJECTED')),
+    created_at     TIMESTAMPTZ,
+    updated_at     TIMESTAMPTZ
+);
+
+CREATE TABLE transfer
+(
+    id                     BIGSERIAL PRIMARY KEY,
+    seller_id              BIGINT NOT NULL,
+    booking_id             BIGINT NOT NULL,
+    status                 VARCHAR(255) CHECK (status IN ('ACTIVE', 'ENDED')),
+    current_highest_bid    INTEGER,
+    transfer_end_date_time TIMESTAMPTZ,
+    created_at             TIMESTAMPTZ,
+    updated_at             TIMESTAMPTZ
+);
+
+-- Add foreign key constraints
+ALTER TABLE bid
+    ADD CONSTRAINT fk_bid_bidder FOREIGN KEY (bidder_id) REFERENCES member (id);
+ALTER TABLE bid
+    ADD CONSTRAINT fk_bid_transfer FOREIGN KEY (transfer_id) REFERENCES transfer (id);
+
+ALTER TABLE booking
+    ADD CONSTRAINT fk_booking_member FOREIGN KEY (member_id) REFERENCES member (id);
+ALTER TABLE booking
+    ADD CONSTRAINT fk_booking_schedule FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule (id);
+
+ALTER TABLE booking_seat
+    ADD CONSTRAINT fk_booking_seat_booking FOREIGN KEY (booking_id) REFERENCES booking (id);
+ALTER TABLE booking_seat
+    ADD CONSTRAINT fk_booking_seat_seat FOREIGN KEY (seat_id) REFERENCES seat (id);
+
+ALTER TABLE coin
+    ADD CONSTRAINT fk_coin_user FOREIGN KEY (user_id) REFERENCES member (id);
+
+ALTER TABLE payment
+    ADD CONSTRAINT fk_payment_booking FOREIGN KEY (booking_id) REFERENCES booking (id);
+
+ALTER TABLE performance_schedule
+    ADD CONSTRAINT fk_schedule_performance FOREIGN KEY (performance_id) REFERENCES performance (id);
+
+ALTER TABLE refund
+    ADD CONSTRAINT fk_refund_payment FOREIGN KEY (payment_id) REFERENCES payment (id);
+
+ALTER TABLE review
+    ADD CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES member (id);
+ALTER TABLE review
+    ADD CONSTRAINT fk_review_performance FOREIGN KEY (performance_id) REFERENCES performance (id);
+ALTER TABLE review
+    ADD CONSTRAINT fk_review_booking FOREIGN KEY (booking_id) REFERENCES booking (id);
+
+ALTER TABLE review_report
+    ADD CONSTRAINT fk_report_reporter FOREIGN KEY (reporter_id) REFERENCES member (id);
+ALTER TABLE review_report
+    ADD CONSTRAINT fk_report_review FOREIGN KEY (review_id) REFERENCES review (id);
+
+ALTER TABLE transfer
+    ADD CONSTRAINT fk_transfer_seller FOREIGN KEY (seller_id) REFERENCES member (id);
+ALTER TABLE transfer
+    ADD CONSTRAINT fk_transfer_booking FOREIGN KEY (booking_id) REFERENCES booking (id);
+
+-- 1. Member 테이블 (기본 회원 데이터)
+INSERT INTO member (email, name, phone_number, birth, sex, provider_type, provider_id, role, coin_balance, is_active, created_at, updated_at) VALUES
+('admin@ssafy.com', 'SSAFY관리자', '010-1111-2222', '1990-01-01', 'MAN', 'KAKAO', 'kakao_ssafy_admin', 'ADMIN', 10000000, true, '2025-08-10 00:00:00+00', '2025-08-10 00:00:00+00'),
+('developer1@ssafy.com', '김코딩', '010-2222-3333', '1995-03-15', 'MAN', 'KAKAO', 'kakao_dev1_456', 'USER', 10000000, true, '2025-08-10 01:00:00+00', '2025-08-13 07:07:31.189769+00'),
+('designer1@ssafy.com', '박디자인', '010-3333-4444', '1997-07-20', 'WOMAN', 'NAVER', 'naver_design1_789', 'USER', 10000000, true, '2025-08-10 02:00:00+00', '2025-08-13 07:17:12.424064+00'),
+('pm1@ssafy.com', '이기획', '010-4444-5555', '1992-11-10', 'MAN', 'KAKAO', 'kakao_pm1_101', 'USER', 10000000, true, '2025-08-10 03:00:00+00', '2025-08-13 07:22:24.427775+00'),
+('tester1@ssafy.com', '최테스트', '010-5555-6666', '1996-05-25', 'WOMAN', 'NAVER', 'naver_qa1_202', 'USER', 10000000, true, '2025-08-10 04:00:00+00', '2025-08-10 04:00:00+00'),
+('qhddnjssla3@naver.com', '김승호', '010-9983-9132', '1996-12-03', 'MAN', 'KAKAO', '4386590184', 'USER', 10000000, true, '2025-08-13 06:56:08.649719+00', '2025-08-13 06:56:08.653669+00'),
+('swandkim@kakao.com', '김서원', '010-8282-3450', '1995-03-11', 'WOMAN', 'KAKAO', '4383729729', 'USER', 10000000, true, '2025-08-13 06:58:01.390848+00', '2025-08-13 06:58:01.394686+00'),
+('yjy121500@naver.com', '연지윤', '010-5223-3756', '2000-12-15', 'WOMAN', 'KAKAO', '4381370540', 'USER', 10000000, true, '2025-08-13 06:58:12.318421+00', '2025-08-13 10:01:30.187432+00'),
+('dt10002@daum.net', '김용범', '010-4968-8648', '1996-04-28', 'MAN', 'KAKAO', '4367509983', 'USER', 10000000, true, '2025-08-13 06:59:08.49903+00', '2025-08-13 06:59:08.502871+00'),
+('0ys@kakao.com', '공예슬', '010-2607-2977', '1998-07-22', 'WOMAN', 'KAKAO', '4393654117', 'USER', 10000000, true, '2025-08-13 07:01:45.128241+00', '2025-08-13 07:28:03.161365+00'),
+('crazygun22@nate.com', '최인국', '010-6591-1141', '1980-02-04', 'MAN', 'KAKAO', '4393653862', 'USER', 10000000, true, '2025-08-13 07:02:42.940266+00', '2025-08-13 07:28:03.160841+00'),
+('wnstj1128@naver.com', '박준서', '010-6516-7214', '2000-11-28', 'WOMAN', 'KAKAO', '4393656004', 'USER', 10000000, true, '2025-08-13 07:03:13.605812+00', '2025-08-13 07:22:24.427226+00'),
+('epnjh0807@kakao.com', '김주혜', '010-5432-9943', '2000-08-07', 'WOMAN', 'KAKAO', '4383711363', 'USER', 10000000, true, '2025-08-13 07:12:27.034137+00', '2025-08-13 07:12:27.088068+00'),
+('epnjh0807@naver.com', '김주혜', '010-5432-9943', '2000-08-07', 'WOMAN', 'NAVER', '1HebkCAPl1MqYNALxIJG9kx8TnfcqVSN9dWLQhiSwcM', 'USER', 10000000, true, '2025-08-13 09:56:30.447287+00', '2025-08-13 10:01:30.188072+00'),
+('dt10002@naver.com', '김용범', '010-4968-8648', '1996-04-28', 'MAN', 'NAVER', 'yQCxyNDszoLJLyIboeyslATqbqTi29c_8yxJFcscD4g', 'USER', 100000000, true, '2025-08-13 23:14:54.430 +0900', '2025-08-13 23:14:54.435 +0900');
+
+
+INSERT INTO performance (
+    id, title, description, genre, venue_name, venue_address,
+    poster_image_url, description_url, duration_minute, age_restriction, status,
+    performance_start_date, performance_end_date, booking_open_date, created_at, updated_at
+) VALUES
+-- 1. END
+(1, 'Born_To_Shine', 'des', 'MUSICAL', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/Born_To_Shine.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/Born_To_Shine_des.png?raw=true',
+ 180, 15, 'END', '2025-07-01', '2025-07-10', '2025-06-01', NOW(), NOW()),
+
+-- 2. END
+(2, 'Rock_Festival', 'des', 'CONCERT', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/Rock_Festival.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/Rock_Festival_des.png?raw=true',
+ 165, 12, 'END', '2025-06-15', '2025-07-20', '2025-06-01', NOW(), NOW()),
+
+-- 3. SCHEDULE
+(3, 'algorithm_story', 'des', 'CLASSIC', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/algorithm_story.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/algorithm_story_des.png?raw=true',
+ 192, 14, 'SCHEDULE', '2025-09-10', '2025-09-20', '2025-09-01', NOW(), NOW()),
+
+-- 4. SCHEDULE
+(4, 'binary_beat_festival', 'des', 'DANCE', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/binary_beat_festival.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/binary_beat_festival_des.png?raw=true',
+ 150, 15, 'SCHEDULE', '2025-10-05', '2025-10-12', '2025-09-25', NOW(), NOW()),
+
+-- 5. SCHEDULE
+(5, 'chroma_symphony', 'des', 'CLASSIC', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/chroma_symphony.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/chroma_symphony_des.png?raw=true',
+ 200, 12, 'SCHEDULE', '2025-09-15', '2025-09-22', '2025-09-05', NOW(), NOW()),
+
+-- 6. OPEN
+(6, 'code_ruin', 'des', 'CONCERT', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/code_ruin.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/code_ruin_des.png?raw=true',
+ 160, 14, 'OPEN', '2025-08-05', '2025-08-20', '2025-07-25', NOW(), NOW()),
+
+-- 7. OPEN
+(7, 'digital_empire', 'des', 'THEATER', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/digital_empire.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/digital_empire_des.png?raw=true',
+ 172, 12, 'OPEN', '2025-08-01', '2025-08-25', '2025-07-15', NOW(), NOW()),
+
+-- 8. OPEN
+(8, 'metamorphosis_modern', 'des', 'THEATER', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/metamorphosis_modern.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/metamorphosis_modern_des.png?raw=true',
+ 140, 15, 'OPEN', '2025-08-10', '2025-08-22', '2025-08-01', NOW(), NOW()),
+
+-- 9. OPEN
+(9, 'neon_dreams', 'des', 'THEATER', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/neon_dreams.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/neon_dreams_des.png?raw=true',
+ 188, 14, 'OPEN', '2025-08-05', '2025-08-30', '2025-07-20', NOW(), NOW()),
+
+-- 10. OPEN
+(10, 'quantum_dance', 'des', 'DANCE', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/quantum_dance.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/quantum_dance_des.png?raw=true',
+ 175, 12, 'OPEN', '2025-08-08', '2025-08-28', '2025-07-30', NOW(), NOW()),
+
+-- 11. OPEN
+(11, 'ssafy_stars_live', 'des', 'CLASSIC', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/ssafy_stars_live.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/ssafy_stars_live_des.png?raw=true',
+ 162, 15, 'OPEN', '2025-08-03', '2025-08-27', '2025-07-25', NOW(), NOW()),
+
+-- 12. OPEN
+(12, 'the_resurrection_of_the_phoenix', 'des', 'CLASSIC', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/the_resurrection_of_the_phoenix.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/the_resurrection_of_the_phoenix_des.png?raw=true',
+ 180, 14, 'OPEN', '2025-08-07', '2025-08-26', '2025-07-28', NOW(), NOW()),
+
+-- 13. OPEN
+(13, '김용범 북콘서트', 'des', 'CONCERT', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/%EA%B9%80%EC%9A%A9%EB%B2%94_%EB%B6%81%EC%BD%98%EC%84%9C%ED%8A%B8.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/%EA%B9%80%EC%9A%A9%EB%B2%94_%EB%B6%81%EC%BD%98%EC%84%9C%ED%8A%B8_des.png?raw=true',
+ 158, 12, 'OPEN', '2025-08-04', '2025-08-29', '2025-07-20', NOW(), NOW()),
+
+-- 14. OPEN
+(14, '김주혜 바이올린 독주회', 'des', 'CLASSIC', '멀티 아트센터 역삼', '서울특별시 강남구 테헤란로 212 멀티캠퍼스',
+ 'https://github.com/juhye87/batt_poster/blob/main/poster_images/%EA%B9%80%EC%A3%BC%ED%98%9C_%EB%B0%94%EC%9D%B4%EC%98%AC%EB%A6%B0_%EB%8F%85%EC%A3%BC%ED%9A%8C.png?raw=true',
+ 'https://github.com/juhye87/batt_poster/blob/main/description/%EA%B9%80%EC%A3%BC%ED%98%9C_%EB%B0%94%EC%9D%B4%EC%98%AC%EB%A6%B0_%EB%8F%85%EC%A3%BC%ED%9A%8C_des.png?raw=true',
+ 170, 15, 'OPEN', '2025-08-06', '2025-08-31', '2025-07-22', NOW(), NOW());
+
+INSERT INTO performance_schedule
+(performance_id, performance_date, performance_time, status, total_seat, available_seat, created_at, updated_at)
+VALUES
+-- id=1 Born_To_Shine (2025-07-01 ~ 2025-07-10)
+(1, '2025-07-01', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(1, '2025-07-01', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(1, '2025-07-06', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(1, '2025-07-06', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(1, '2025-07-10', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=2 Rock_Festival (2025-06-15 ~ 2025-07-20)
+(2, '2025-06-15', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(2, '2025-06-15', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(2, '2025-07-02', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(2, '2025-07-02', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(2, '2025-07-20', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=3 algorithm_story (2025-09-10 ~ 2025-09-20)
+(3, '2025-09-10', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(3, '2025-09-10', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(3, '2025-09-15', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(3, '2025-09-15', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(3, '2025-09-20', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=4 binary_beat_festival (2025-10-05 ~ 2025-10-12)
+(4, '2025-10-05', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(4, '2025-10-05', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(4, '2025-10-08', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(4, '2025-10-08', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(4, '2025-10-12', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=5 chroma_symphony (2025-09-15 ~ 2025-09-22)
+(5, '2025-09-15', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(5, '2025-09-15', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(5, '2025-09-18', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(5, '2025-09-18', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(5, '2025-09-22', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=6 code_ruin (2025-08-05 ~ 2025-08-20)
+(6, '2025-08-05', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(6, '2025-08-05', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(6, '2025-08-13', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(6, '2025-08-13', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(6, '2025-08-20', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(6, '2025-08-09', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(6, '2025-08-09', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(6, '2025-08-20', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=7 digital_empire (2025-08-01 ~ 2025-08-25)
+(7, '2025-08-01', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(7, '2025-08-01', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(7, '2025-08-13', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(7, '2025-08-13', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(7, '2025-08-25', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(7, '2025-08-07', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(7, '2025-08-07', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(7, '2025-08-25', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=8 metamorphosis_modern (2025-08-10 ~ 2025-08-22)
+(8, '2025-08-10', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(8, '2025-08-10', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(8, '2025-08-16', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(8, '2025-08-16', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(8, '2025-08-22', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(8, '2025-08-12', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(8, '2025-08-12', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=9 neon_dreams (2025-08-05 ~ 2025-08-30)
+(9, '2025-08-05', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(9, '2025-08-05', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(9, '2025-08-18', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(9, '2025-08-18', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(9, '2025-08-30', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(9, '2025-08-12', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(9, '2025-08-12', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=10 quantum_dance (2025-08-08 ~ 2025-08-28)
+(10, '2025-08-08', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(10, '2025-08-08', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(10, '2025-08-18', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(10, '2025-08-18', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(10, '2025-08-28', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=11 ssafy_stars_live (2025-08-03 ~ 2025-08-27)
+(11, '2025-08-03', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(11, '2025-08-03', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(11, '2025-08-15', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(11, '2025-08-15', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(11, '2025-08-27', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=12 the_resurrection_of_the_phoenix (2025-08-07 ~ 2025-08-26)
+(12, '2025-08-07', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(12, '2025-08-07', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(12, '2025-08-16', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(12, '2025-08-16', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(12, '2025-08-26', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(12, '2025-08-22', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(12, '2025-08-22', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=13 김용범 북콘서트 (2025-08-04 ~ 2025-08-29)
+(13, '2025-08-04', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(13, '2025-08-04', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(13, '2025-08-16', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(13, '2025-08-16', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(13, '2025-08-29', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(13, '2025-08-17', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(13, '2025-08-17', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+
+-- id=14 김주혜 바이올린 독주회 (2025-08-06 ~ 2025-08-31)
+(14, '2025-08-06', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(14, '2025-08-06', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(14, '2025-08-18', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(14, '2025-08-18', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(14, '2025-08-31', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(14, '2025-08-24', '14:00:00', 'SCHEDULED', 0, 0, NOW(), NOW()),
+(14, '2025-08-24', '19:30:00', 'SCHEDULED', 0, 0, NOW(), NOW());
+
+-- 4. Seat 테이블
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+
+-- VIP 1행 (20석) - Y좌표: 60
+(1, 1, 'VIP', 'A', 1, 1, 155, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 2, 'VIP', 'A', 1, 1, 170, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 3, 'VIP', 'A', 1, 1, 185, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 4, 'VIP', 'A', 1, 1, 200, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 5, 'VIP', 'A', 1, 1, 215, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 6, 'VIP', 'A', 1, 1, 230, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 7, 'VIP', 'A', 1, 1, 245, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 8, 'VIP', 'A', 1, 1, 260, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 9, 'VIP', 'A', 1, 1, 275, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 10, 'VIP', 'A', 1, 1, 290, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 11, 'VIP', 'A', 1, 1, 305, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 12, 'VIP', 'A', 1, 1, 320, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 13, 'VIP', 'A', 1, 1, 335, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 14, 'VIP', 'A', 1, 1, 350, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 15, 'VIP', 'A', 1, 1, 365, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 16, 'VIP', 'A', 1, 1, 380, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 17, 'VIP', 'A', 1, 1, 395, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 18, 'VIP', 'A', 1, 1, 410, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 19, 'VIP', 'A', 1, 1, 425, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 20, 'VIP', 'A', 1, 1, 440, 75, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+
+-- VIP 2행 (20석) - Y좌표: 90
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+(1, 21, 'VIP', 'A', 1, 2, 155, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 22, 'VIP', 'A', 1, 2, 170, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 23, 'VIP', 'A', 1, 2, 185, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 24, 'VIP', 'A', 1, 2, 200, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 25, 'VIP', 'A', 1, 2, 215, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 26, 'VIP', 'A', 1, 2, 230, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 27, 'VIP', 'A', 1, 2, 245, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 28, 'VIP', 'A', 1, 2, 260, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 29, 'VIP', 'A', 1, 2, 275, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 30, 'VIP', 'A', 1, 2, 290, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 31, 'VIP', 'A', 1, 2, 305, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 32, 'VIP', 'A', 1, 2, 320, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 33, 'VIP', 'A', 1, 2, 335, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 34, 'VIP', 'A', 1, 2, 350, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 35, 'VIP', 'A', 1, 2, 365, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 36, 'VIP', 'A', 1, 2, 380, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 37, 'VIP', 'A', 1, 2, 395, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 38, 'VIP', 'A', 1, 2, 410, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 39, 'VIP', 'A', 1, 2, 425, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 40, 'VIP', 'A', 1, 2, 440, 90, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+
+-- VIP 3행 (20석) - Y좌표: 105
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+(1, 41, 'VIP', 'A', 1, 3, 155, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 42, 'VIP', 'A', 1, 3, 170, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 43, 'VIP', 'A', 1, 3, 185, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 44, 'VIP', 'A', 1, 3, 200, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 45, 'VIP', 'A', 1, 3, 215, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 46, 'VIP', 'A', 1, 3, 230, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 47, 'VIP', 'A', 1, 3, 245, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 48, 'VIP', 'A', 1, 3, 260, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 49, 'VIP', 'A', 1, 3, 275, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 50, 'VIP', 'A', 1, 3, 290, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 51, 'VIP', 'A', 1, 3, 305, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 52, 'VIP', 'A', 1, 3, 320, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 53, 'VIP', 'A', 1, 3, 335, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 54, 'VIP', 'A', 1, 3, 350, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 55, 'VIP', 'A', 1, 3, 365, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 56, 'VIP', 'A', 1, 3, 380, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 57, 'VIP', 'A', 1, 3, 395, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 58, 'VIP', 'A', 1, 3, 410, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 59, 'VIP', 'A', 1, 3, 425, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 60, 'VIP', 'A', 1, 3, 440, 105, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+
+-- VIP 4행 (20석) - Y좌표: 120
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+(1, 61, 'VIP', 'A', 1, 4, 155, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 62, 'VIP', 'A', 1, 4, 170, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 63, 'VIP', 'A', 1, 4, 185, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 64, 'VIP', 'A', 1, 4, 200, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 65, 'VIP', 'A', 1, 4, 215, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 66, 'VIP', 'A', 1, 4, 230, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 67, 'VIP', 'A', 1, 4, 245, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 68, 'VIP', 'A', 1, 4, 260, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 69, 'VIP', 'A', 1, 4, 275, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 70, 'VIP', 'A', 1, 4, 290, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 71, 'VIP', 'A', 1, 4, 305, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 72, 'VIP', 'A', 1, 4, 320, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 73, 'VIP', 'A', 1, 4, 335, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 74, 'VIP', 'A', 1, 4, 350, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 75, 'VIP', 'A', 1, 4, 365, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 76, 'VIP', 'A', 1, 4, 380, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 77, 'VIP', 'A', 1, 4, 395, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 78, 'VIP', 'A', 1, 4, 410, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 79, 'VIP', 'A', 1, 4, 425, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 80, 'VIP', 'A', 1, 4, 440, 120, 180000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+-- === B구역 (R등급) - 파란색, VIP 뒤쪽 ===
+-- 7행 x 23석 + 1행 x 24석 = 185석
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+
+-- R 등급 5행 (23석) - Y좌표: 155
+(1, 78, 'R', 'B', 1, 5, 140, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 79, 'R', 'B', 1, 5, 155, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 80, 'R', 'B', 1, 5, 170, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 81, 'R', 'B', 1, 5, 185, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 82, 'R', 'B', 1, 5, 200, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 83, 'R', 'B', 1, 5, 215, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 84, 'R', 'B', 1, 5, 230, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 85, 'R', 'B', 1, 5, 245, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 86, 'R', 'B', 1, 5, 260, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 87, 'R', 'B', 1, 5, 275, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 88, 'R', 'B', 1, 5, 290, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 89, 'R', 'B', 1, 5, 305, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 90, 'R', 'B', 1, 5, 320, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 91, 'R', 'B', 1, 5, 335, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 92, 'R', 'B', 1, 5, 350, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 93, 'R', 'B', 1, 5, 365, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 94, 'R', 'B', 1, 5, 380, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 95, 'R', 'B', 1, 5, 395, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 96, 'R', 'B', 1, 5, 410, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 97, 'R', 'B', 1, 5, 425, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 98, 'R', 'B', 1, 5, 440, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 99, 'R', 'B', 1, 5, 455, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 100, 'R', 'B', 1, 5, 470, 155, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+
+-- R 등급 6행 (23석) - Y좌표: 170
+(1, 101, 'R', 'B', 1, 6, 140, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 102, 'R', 'B', 1, 6, 155, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 103, 'R', 'B', 1, 6, 170, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 104, 'R', 'B', 1, 6, 185, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 105, 'R', 'B', 1, 6, 200, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 106, 'R', 'B', 1, 6, 215, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 107, 'R', 'B', 1, 6, 230, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 108, 'R', 'B', 1, 6, 245, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 109, 'R', 'B', 1, 6, 260, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 110, 'R', 'B', 1, 6, 275, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 111, 'R', 'B', 1, 6, 290, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 112, 'R', 'B', 1, 6, 305, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 113, 'R', 'B', 1, 6, 320, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 114, 'R', 'B', 1, 6, 335, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 115, 'R', 'B', 1, 6, 350, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 116, 'R', 'B', 1, 6, 365, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 117, 'R', 'B', 1, 6, 380, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 118, 'R', 'B', 1, 6, 395, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 119, 'R', 'B', 1, 6, 410, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 120, 'R', 'B', 1, 6, 425, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 121, 'R', 'B', 1, 6, 440, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 122, 'R', 'B', 1, 6, 455, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 123, 'R', 'B', 1, 6, 470, 170, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+
+
+-- R 등급 7행 (23석) - Y좌표: 185
+(1, 124, 'R', 'B', 1, 7, 140, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 125, 'R', 'B', 1, 7, 155, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 126, 'R', 'B', 1, 7, 170, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 127, 'R', 'B', 1, 7, 185, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 128, 'R', 'B', 1, 7, 200, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 129, 'R', 'B', 1, 7, 215, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 130, 'R', 'B', 1, 7, 230, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 131, 'R', 'B', 1, 7, 245, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 132, 'R', 'B', 1, 7, 260, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 133, 'R', 'B', 1, 7, 275, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 134, 'R', 'B', 1, 7, 290, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 135, 'R', 'B', 1, 7, 305, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 136, 'R', 'B', 1, 7, 320, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 137, 'R', 'B', 1, 7, 335, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 138, 'R', 'B', 1, 7, 350, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 139, 'R', 'B', 1, 7, 365, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 140, 'R', 'B', 1, 7, 380, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 141, 'R', 'B', 1, 7, 395, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 142, 'R', 'B', 1, 7, 410, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 143, 'R', 'B', 1, 7, 425, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 144, 'R', 'B', 1, 7, 440, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 145, 'R', 'B', 1, 7, 455, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 146, 'R', 'B', 1, 7, 470, 185, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+
+-- R 등급 8행 (23석) - Y좌표: 200
+(1, 147, 'R', 'B', 1, 8, 140, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 148, 'R', 'B', 1, 8, 155, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 149, 'R', 'B', 1, 8, 170, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 150, 'R', 'B', 1, 8, 185, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 151, 'R', 'B', 1, 8, 200, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 152, 'R', 'B', 1, 8, 215, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 153, 'R', 'B', 1, 8, 230, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 154, 'R', 'B', 1, 8, 245, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 155, 'R', 'B', 1, 8, 260, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 156, 'R', 'B', 1, 8, 275, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 157, 'R', 'B', 1, 8, 290, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 158, 'R', 'B', 1, 8, 305, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 159, 'R', 'B', 1, 8, 320, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 160, 'R', 'B', 1, 8, 335, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 161, 'R', 'B', 1, 8, 350, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 162, 'R', 'B', 1, 8, 365, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 163, 'R', 'B', 1, 8, 380, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 164, 'R', 'B', 1, 8, 395, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 165, 'R', 'B', 1, 8, 410, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 166, 'R', 'B', 1, 8, 425, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 167, 'R', 'B', 1, 8, 440, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 168, 'R', 'B', 1, 8, 455, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 169, 'R', 'B', 1, 8, 470, 200, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+
+-- R 등급 9행 (23석) - Y좌표: 215
+(1, 170, 'R', 'B', 1, 9, 140, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 171, 'R', 'B', 1, 9, 155, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 172, 'R', 'B', 1, 9, 170, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 173, 'R', 'B', 1, 9, 185, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 174, 'R', 'B', 1, 9, 200, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 175, 'R', 'B', 1, 9, 215, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 176, 'R', 'B', 1, 9, 230, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 177, 'R', 'B', 1, 9, 245, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 178, 'R', 'B', 1, 9, 260, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 179, 'R', 'B', 1, 9, 275, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 180, 'R', 'B', 1, 9, 290, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 181, 'R', 'B', 1, 9, 305, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 182, 'R', 'B', 1, 9, 320, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 183, 'R', 'B', 1, 9, 335, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 184, 'R', 'B', 1, 9, 350, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 185, 'R', 'B', 1, 9, 365, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 186, 'R', 'B', 1, 9, 380, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 187, 'R', 'B', 1, 9, 395, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 188, 'R', 'B', 1, 9, 410, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 189, 'R', 'B', 1, 9, 425, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 190, 'R', 'B', 1, 9, 440, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 191, 'R', 'B', 1, 9, 455, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 192, 'R', 'B', 1, 9, 470, 215, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+-- R 등급 10행 (23석) - Y좌표: 230
+(1, 193, 'R', 'B', 1, 10, 140, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 194, 'R', 'B', 1, 10, 155, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 195, 'R', 'B', 1, 10, 170, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 196, 'R', 'B', 1, 10, 185, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 197, 'R', 'B', 1, 10, 200, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 198, 'R', 'B', 1, 10, 215, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 199, 'R', 'B', 1, 10, 230, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 200, 'R', 'B', 1, 10, 245, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 201, 'R', 'B', 1, 10, 260, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 202, 'R', 'B', 1, 10, 275, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 203, 'R', 'B', 1, 10, 290, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 204, 'R', 'B', 1, 10, 305, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 205, 'R', 'B', 1, 10, 320, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 206, 'R', 'B', 1, 10, 335, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 207, 'R', 'B', 1, 10, 350, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 208, 'R', 'B', 1, 10, 365, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 209, 'R', 'B', 1, 10, 380, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 210, 'R', 'B', 1, 10, 395, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 211, 'R', 'B', 1, 10, 410, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 212, 'R', 'B', 1, 10, 425, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 213, 'R', 'B', 1, 10, 440, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 214, 'R', 'B', 1, 10, 455, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 215, 'R', 'B', 1, 10, 470, 230, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+-- R 등급 11행 (24석) - Y좌표: 245 (마지막 행은 24석으로 총 수량 맞춤)
+(1, 216, 'R', 'B', 1, 11, 140, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 217, 'R', 'B', 1, 11, 155, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 218, 'R', 'B', 1, 11, 170, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 219, 'R', 'B', 1, 11, 185, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 220, 'R', 'B', 1, 11, 200, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 221, 'R', 'B', 1, 11, 215, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 222, 'R', 'B', 1, 11, 230, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 223, 'R', 'B', 1, 11, 245, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 224, 'R', 'B', 1, 11, 260, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 225, 'R', 'B', 1, 11, 275, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 226, 'R', 'B', 1, 11, 290, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 227, 'R', 'B', 1, 11, 305, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 228, 'R', 'B', 1, 11, 320, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 229, 'R', 'B', 1, 11, 335, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 230, 'R', 'B', 1, 11, 350, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 231, 'R', 'B', 1, 11, 365, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 232, 'R', 'B', 1, 11, 380, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 233, 'R', 'B', 1, 11, 395, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 234, 'R', 'B', 1, 11, 410, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 235, 'R', 'B', 1, 11, 425, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 236, 'R', 'B', 1, 11, 440, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 237, 'R', 'B', 1, 11, 455, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 238, 'R', 'B', 1, 11, 470, 245, 140000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+
+-- S 등급 12행 (33석) - y좌표: 280
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+(1, 239, 'S', 'C', 1, 12, 63, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 240, 'S', 'C', 1, 12, 78, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 241, 'S', 'C', 1, 12, 93, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 242, 'S', 'C', 1, 12, 108, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 243, 'S', 'C', 1, 12, 123, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 244, 'S', 'C', 1, 12, 138, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 245, 'S', 'C', 1, 12, 153, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 246, 'S', 'C', 1, 12, 168, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 247, 'S', 'C', 1, 12, 183, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 248, 'S', 'C', 1, 12, 198, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 249, 'S', 'C', 1, 12, 213, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 250, 'S', 'C', 1, 12, 228, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 251, 'S', 'C', 1, 12, 243, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 252, 'S', 'C', 1, 12, 258, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 253, 'S', 'C', 1, 12, 273, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 254, 'S', 'C', 1, 12, 288, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 255, 'S', 'C', 1, 12, 303, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 256, 'S', 'C', 1, 12, 318, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 257, 'S', 'C', 1, 12, 333, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 258, 'S', 'C', 1, 12, 348, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 259, 'S', 'C', 1, 12, 363, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 260, 'S', 'C', 1, 12, 378, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 261, 'S', 'C', 1, 12, 393, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 262, 'S', 'C', 1, 12, 408, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 263, 'S', 'C', 1, 12, 423, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 264, 'S', 'C', 1, 12, 438, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 265, 'S', 'C', 1, 12, 453, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 266, 'S', 'C', 1, 12, 468, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 267, 'S', 'C', 1, 12, 483, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 268, 'S', 'C', 1, 12, 498, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 269, 'S', 'C', 1, 12, 513, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 270, 'S', 'C', 1, 12, 528, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 271, 'S', 'C', 1, 12, 543, 280, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- S 등급 13행 (33석) - y좌표: 295
+(1, 272, 'S', 'C', 1, 13, 63, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 273, 'S', 'C', 1, 13, 78, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 274, 'S', 'C', 1, 13, 93, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 275, 'S', 'C', 1, 13, 108, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 276, 'S', 'C', 1, 13, 123, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 277, 'S', 'C', 1, 13, 138, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 278, 'S', 'C', 1, 13, 153, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 279, 'S', 'C', 1, 13, 168, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 280, 'S', 'C', 1, 13, 183, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 281, 'S', 'C', 1, 13, 198, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 282, 'S', 'C', 1, 13, 213, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 283, 'S', 'C', 1, 13, 228, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 284, 'S', 'C', 1, 13, 243, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 285, 'S', 'C', 1, 13, 258, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 286, 'S', 'C', 1, 13, 273, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 287, 'S', 'C', 1, 13, 288, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 288, 'S', 'C', 1, 13, 303, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 289, 'S', 'C', 1, 13, 318, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 290, 'S', 'C', 1, 13, 333, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 291, 'S', 'C', 1, 13, 348, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 292, 'S', 'C', 1, 13, 363, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 293, 'S', 'C', 1, 13, 378, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 294, 'S', 'C', 1, 13, 393, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 295, 'S', 'C', 1, 13, 408, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 296, 'S', 'C', 1, 13, 423, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 297, 'S', 'C', 1, 13, 438, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 298, 'S', 'C', 1, 13, 453, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 299, 'S', 'C', 1, 13, 468, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 300, 'S', 'C', 1, 13, 483, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 301, 'S', 'C', 1, 13, 498, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 302, 'S', 'C', 1, 13, 513, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 303, 'S', 'C', 1, 13, 528, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 304, 'S', 'C', 1, 13, 543, 295, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- S 등급 14행 (33석) - y좌표: 310
+(1, 305, 'S', 'C', 1, 14, 63, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 306, 'S', 'C', 1, 14, 78, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 307, 'S', 'C', 1, 14, 93, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 308, 'S', 'C', 1, 14, 108, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 309, 'S', 'C', 1, 14, 123, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 310, 'S', 'C', 1, 14, 138, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 311, 'S', 'C', 1, 14, 153, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 312, 'S', 'C', 1, 14, 168, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 313, 'S', 'C', 1, 14, 183, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 314, 'S', 'C', 1, 14, 198, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 315, 'S', 'C', 1, 14, 213, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 316, 'S', 'C', 1, 14, 228, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 317, 'S', 'C', 1, 14, 243, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 318, 'S', 'C', 1, 14, 258, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 319, 'S', 'C', 1, 14, 273, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 320, 'S', 'C', 1, 14, 288, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 321, 'S', 'C', 1, 14, 303, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 322, 'S', 'C', 1, 14, 318, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 323, 'S', 'C', 1, 14, 333, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 324, 'S', 'C', 1, 14, 348, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 325, 'S', 'C', 1, 14, 363, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 326, 'S', 'C', 1, 14, 378, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 327, 'S', 'C', 1, 14, 393, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 328, 'S', 'C', 1, 14, 408, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 329, 'S', 'C', 1, 14, 423, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 330, 'S', 'C', 1, 14, 438, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 331, 'S', 'C', 1, 14, 453, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 332, 'S', 'C', 1, 14, 468, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 333, 'S', 'C', 1, 14, 483, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 334, 'S', 'C', 1, 14, 498, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 335, 'S', 'C', 1, 14, 513, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 336, 'S', 'C', 1, 14, 528, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 337, 'S', 'C', 1, 14, 543, 310, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- S 등급 15행 (33석) - y좌표: 325
+(1, 338, 'S', 'C', 1, 15, 63, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 339, 'S', 'C', 1, 15, 78, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 340, 'S', 'C', 1, 15, 93, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 341, 'S', 'C', 1, 15, 108, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 342, 'S', 'C', 1, 15, 123, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 343, 'S', 'C', 1, 15, 138, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 344, 'S', 'C', 1, 15, 153, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 345, 'S', 'C', 1, 15, 168, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 346, 'S', 'C', 1, 15, 183, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 347, 'S', 'C', 1, 15, 198, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 348, 'S', 'C', 1, 15, 213, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 349, 'S', 'C', 1, 15, 228, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 350, 'S', 'C', 1, 15, 243, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 351, 'S', 'C', 1, 15, 258, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 352, 'S', 'C', 1, 15, 273, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 353, 'S', 'C', 1, 15, 288, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 354, 'S', 'C', 1, 15, 303, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 355, 'S', 'C', 1, 15, 318, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 356, 'S', 'C', 1, 15, 333, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 357, 'S', 'C', 1, 15, 348, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 358, 'S', 'C', 1, 15, 363, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 359, 'S', 'C', 1, 15, 378, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 360, 'S', 'C', 1, 15, 393, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 361, 'S', 'C', 1, 15, 408, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 362, 'S', 'C', 1, 15, 423, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 363, 'S', 'C', 1, 15, 438, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 364, 'S', 'C', 1, 15, 453, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 365, 'S', 'C', 1, 15, 468, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 366, 'S', 'C', 1, 15, 483, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 367, 'S', 'C', 1, 15, 498, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 368, 'S', 'C', 1, 15, 513, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 369, 'S', 'C', 1, 15, 528, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 370, 'S', 'C', 1, 15, 543, 325, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- S 등급 16행 (33석) - y좌표: 340
+(1, 371, 'S', 'C', 1, 16, 63, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 372, 'S', 'C', 1, 16, 78, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 373, 'S', 'C', 1, 16, 93, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 374, 'S', 'C', 1, 16, 108, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 375, 'S', 'C', 1, 16, 123, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 376, 'S', 'C', 1, 16, 138, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 377, 'S', 'C', 1, 16, 153, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 378, 'S', 'C', 1, 16, 168, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 379, 'S', 'C', 1, 16, 183, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 380, 'S', 'C', 1, 16, 198, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 381, 'S', 'C', 1, 16, 213, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 382, 'S', 'C', 1, 16, 228, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 383, 'S', 'C', 1, 16, 243, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 384, 'S', 'C', 1, 16, 258, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 385, 'S', 'C', 1, 16, 273, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 386, 'S', 'C', 1, 16, 288, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 387, 'S', 'C', 1, 16, 303, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 388, 'S', 'C', 1, 16, 318, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 389, 'S', 'C', 1, 16, 333, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 390, 'S', 'C', 1, 16, 348, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 391, 'S', 'C', 1, 16, 363, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 392, 'S', 'C', 1, 16, 378, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 393, 'S', 'C', 1, 16, 393, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 394, 'S', 'C', 1, 16, 408, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 395, 'S', 'C', 1, 16, 423, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 396, 'S', 'C', 1, 16, 438, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 397, 'S', 'C', 1, 16, 453, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 398, 'S', 'C', 1, 16, 468, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 399, 'S', 'C', 1, 16, 483, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 400, 'S', 'C', 1, 16, 498, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 401, 'S', 'C', 1, 16, 513, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 402, 'S', 'C', 1, 16, 528, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 403, 'S', 'C', 1, 16, 543, 340, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+---
+
+-- S 등급 17행 (33석) - y좌표: 355
+(1, 404, 'S', 'C', 1, 17, 63, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 405, 'S', 'C', 1, 17, 78, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 406, 'S', 'C', 1, 17, 93, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 407, 'S', 'C', 1, 17, 108, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 408, 'S', 'C', 1, 17, 123, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 409, 'S', 'C', 1, 17, 138, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 410, 'S', 'C', 1, 17, 153, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 411, 'S', 'C', 1, 17, 168, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 412, 'S', 'C', 1, 17, 183, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 413, 'S', 'C', 1, 17, 198, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 414, 'S', 'C', 1, 17, 213, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 415, 'S', 'C', 1, 17, 228, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 416, 'S', 'C', 1, 17, 243, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 417, 'S', 'C', 1, 17, 258, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 418, 'S', 'C', 1, 17, 273, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 419, 'S', 'C', 1, 17, 288, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 420, 'S', 'C', 1, 17, 303, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 421, 'S', 'C', 1, 17, 318, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 422, 'S', 'C', 1, 17, 333, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 423, 'S', 'C', 1, 17, 348, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 424, 'S', 'C', 1, 17, 363, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 425, 'S', 'C', 1, 17, 378, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 426, 'S', 'C', 1, 17, 393, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 427, 'S', 'C', 1, 17, 408, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 428, 'S', 'C', 1, 17, 423, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 429, 'S', 'C', 1, 17, 438, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 430, 'S', 'C', 1, 17, 453, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 431, 'S', 'C', 1, 17, 468, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 432, 'S', 'C', 1, 17, 483, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 433, 'S', 'C', 1, 17, 498, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 434, 'S', 'C', 1, 17, 513, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 435, 'S', 'C', 1, 17, 528, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 436, 'S', 'C', 1, 17, 543, 355, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- S 등급 18행 (33석) - y좌표: 370
+(1, 437, 'S', 'C', 1, 18, 63, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 438, 'S', 'C', 1, 18, 78, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 439, 'S', 'C', 1, 18, 93, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 440, 'S', 'C', 1, 18, 108, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 441, 'S', 'C', 1, 18, 123, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 442, 'S', 'C', 1, 18, 138, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 443, 'S', 'C', 1, 18, 153, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 444, 'S', 'C', 1, 18, 168, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 445, 'S', 'C', 1, 18, 183, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 446, 'S', 'C', 1, 18, 198, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 447, 'S', 'C', 1, 18, 213, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 448, 'S', 'C', 1, 18, 228, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 449, 'S', 'C', 1, 18, 243, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 450, 'S', 'C', 1, 18, 258, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 451, 'S', 'C', 1, 18, 273, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 452, 'S', 'C', 1, 18, 288, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 453, 'S', 'C', 1, 18, 303, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 454, 'S', 'C', 1, 18, 318, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 455, 'S', 'C', 1, 18, 333, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 456, 'S', 'C', 1, 18, 348, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 457, 'S', 'C', 1, 18, 363, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 458, 'S', 'C', 1, 18, 378, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 459, 'S', 'C', 1, 18, 393, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 460, 'S', 'C', 1, 18, 408, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 461, 'S', 'C', 1, 18, 423, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 462, 'S', 'C', 1, 18, 438, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 463, 'S', 'C', 1, 18, 453, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 464, 'S', 'C', 1, 18, 468, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 465, 'S', 'C', 1, 18, 483, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 466, 'S', 'C', 1, 18, 498, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 467, 'S', 'C', 1, 18, 513, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 468, 'S', 'C', 1, 18, 528, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 469, 'S', 'C', 1, 18, 543, 370, 110000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+-- D구역 A등급 좌석 INSERT문 (각 행당 41개)
+-- 19행부터 23행까지 총 5행 × 41석 = 205석
+
+INSERT INTO seat (performance_schedule_id, number, grade, zone, floor, row, x, y, price, status, created_at, updated_at) VALUES
+-- A 등급 19행 (41석) - y좌표: 405
+(1, 470, 'A', 'D', 1, 19, 0, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 471, 'A', 'D', 1, 19, 15, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 472, 'A', 'D', 1, 19, 30, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 473, 'A', 'D', 1, 19, 45, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 474, 'A', 'D', 1, 19, 60, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 475, 'A', 'D', 1, 19, 75, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 476, 'A', 'D', 1, 19, 90, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 477, 'A', 'D', 1, 19, 105, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 478, 'A', 'D', 1, 19, 120, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 479, 'A', 'D', 1, 19, 135, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 480, 'A', 'D', 1, 19, 150, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 481, 'A', 'D', 1, 19, 165, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 482, 'A', 'D', 1, 19, 180, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 483, 'A', 'D', 1, 19, 195, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 484, 'A', 'D', 1, 19, 210, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 485, 'A', 'D', 1, 19, 225, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 486, 'A', 'D', 1, 19, 240, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 487, 'A', 'D', 1, 19, 255, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 488, 'A', 'D', 1, 19, 270, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 489, 'A', 'D', 1, 19, 285, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 490, 'A', 'D', 1, 19, 300, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 491, 'A', 'D', 1, 19, 315, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 492, 'A', 'D', 1, 19, 330, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 493, 'A', 'D', 1, 19, 345, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 494, 'A', 'D', 1, 19, 360, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 495, 'A', 'D', 1, 19, 375, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 496, 'A', 'D', 1, 19, 390, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 497, 'A', 'D', 1, 19, 405, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 498, 'A', 'D', 1, 19, 420, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 499, 'A', 'D', 1, 19, 435, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 500, 'A', 'D', 1, 19, 450, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 501, 'A', 'D', 1, 19, 465, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 502, 'A', 'D', 1, 19, 480, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 503, 'A', 'D', 1, 19, 495, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 504, 'A', 'D', 1, 19, 510, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 505, 'A', 'D', 1, 19, 525, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 506, 'A', 'D', 1, 19, 540, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 507, 'A', 'D', 1, 19, 555, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 508, 'A', 'D', 1, 19, 570, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 509, 'A', 'D', 1, 19, 585, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 510, 'A', 'D', 1, 19, 600, 405, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- A 등급 20행 (41석) - y좌표: 420
+(1, 511, 'A', 'D', 1, 20, 0, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 512, 'A', 'D', 1, 20, 15, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 513, 'A', 'D', 1, 20, 30, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 514, 'A', 'D', 1, 20, 45, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 515, 'A', 'D', 1, 20, 60, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 516, 'A', 'D', 1, 20, 75, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 517, 'A', 'D', 1, 20, 90, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 518, 'A', 'D', 1, 20, 105, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 519, 'A', 'D', 1, 20, 120, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 520, 'A', 'D', 1, 20, 135, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 521, 'A', 'D', 1, 20, 150, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 522, 'A', 'D', 1, 20, 165, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 523, 'A', 'D', 1, 20, 180, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 524, 'A', 'D', 1, 20, 195, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 525, 'A', 'D', 1, 20, 210, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 526, 'A', 'D', 1, 20, 225, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 527, 'A', 'D', 1, 20, 240, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 528, 'A', 'D', 1, 20, 255, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 529, 'A', 'D', 1, 20, 270, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 530, 'A', 'D', 1, 20, 285, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 531, 'A', 'D', 1, 20, 300, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 532, 'A', 'D', 1, 20, 315, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 533, 'A', 'D', 1, 20, 330, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 534, 'A', 'D', 1, 20, 345, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 535, 'A', 'D', 1, 20, 360, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 536, 'A', 'D', 1, 20, 375, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 537, 'A', 'D', 1, 20, 390, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 538, 'A', 'D', 1, 20, 405, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 539, 'A', 'D', 1, 20, 420, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 540, 'A', 'D', 1, 20, 435, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 541, 'A', 'D', 1, 20, 450, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 542, 'A', 'D', 1, 20, 465, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 543, 'A', 'D', 1, 20, 480, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 544, 'A', 'D', 1, 20, 495, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 545, 'A', 'D', 1, 20, 510, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 546, 'A', 'D', 1, 20, 525, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 547, 'A', 'D', 1, 20, 540, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 548, 'A', 'D', 1, 20, 555, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 549, 'A', 'D', 1, 20, 570, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 550, 'A', 'D', 1, 20, 585, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 551, 'A', 'D', 1, 20, 600, 420, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- A 등급 21행 (41석) - y좌표: 435
+(1, 552, 'A', 'D', 1, 21, 0, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 553, 'A', 'D', 1, 21, 15, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 555, 'A', 'D', 1, 21, 45, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 556, 'A', 'D', 1, 21, 60, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 554, 'A', 'D', 1, 21, 30, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 557, 'A', 'D', 1, 21, 75, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 558, 'A', 'D', 1, 21, 90, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 559, 'A', 'D', 1, 21, 105, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 560, 'A', 'D', 1, 21, 120, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 561, 'A', 'D', 1, 21, 135, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 562, 'A', 'D', 1, 21, 150, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 563, 'A', 'D', 1, 21, 165, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 564, 'A', 'D', 1, 21, 180, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 565, 'A', 'D', 1, 21, 195, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 566, 'A', 'D', 1, 21, 210, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 567, 'A', 'D', 1, 21, 225, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 568, 'A', 'D', 1, 21, 240, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 569, 'A', 'D', 1, 21, 255, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 570, 'A', 'D', 1, 21, 270, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 571, 'A', 'D', 1, 21, 285, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 572, 'A', 'D', 1, 21, 300, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 573, 'A', 'D', 1, 21, 315, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 574, 'A', 'D', 1, 21, 330, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 575, 'A', 'D', 1, 21, 345, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 576, 'A', 'D', 1, 21, 360, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 577, 'A', 'D', 1, 21, 375, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 578, 'A', 'D', 1, 21, 390, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 579, 'A', 'D', 1, 21, 405, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 580, 'A', 'D', 1, 21, 420, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 581, 'A', 'D', 1, 21, 435, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 582, 'A', 'D', 1, 21, 450, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 583, 'A', 'D', 1, 21, 465, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 584, 'A', 'D', 1, 21, 480, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 585, 'A', 'D', 1, 21, 495, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 586, 'A', 'D', 1, 21, 510, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 587, 'A', 'D', 1, 21, 525, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 588, 'A', 'D', 1, 21, 540, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 589, 'A', 'D', 1, 21, 555, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 590, 'A', 'D', 1, 21, 570, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 591, 'A', 'D', 1, 21, 585, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 592, 'A', 'D', 1, 21, 600, 435, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- A 등급 22행 (41석) - y좌표: 450
+(1, 593, 'A', 'D', 1, 22, 0, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 594, 'A', 'D', 1, 22, 15, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 595, 'A', 'D', 1, 22, 30, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 596, 'A', 'D', 1, 22, 45, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 597, 'A', 'D', 1, 22, 60, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 598, 'A', 'D', 1, 22, 75, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 599, 'A', 'D', 1, 22, 90, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 600, 'A', 'D', 1, 22, 105, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 601, 'A', 'D', 1, 22, 120, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 602, 'A', 'D', 1, 22, 135, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 603, 'A', 'D', 1, 22, 150, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 604, 'A', 'D', 1, 22, 165, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 605, 'A', 'D', 1, 22, 180, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 606, 'A', 'D', 1, 22, 195, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 607, 'A', 'D', 1, 22, 210, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 608, 'A', 'D', 1, 22, 225, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 609, 'A', 'D', 1, 22, 240, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 610, 'A', 'D', 1, 22, 255, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 611, 'A', 'D', 1, 22, 270, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 612, 'A', 'D', 1, 22, 285, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 613, 'A', 'D', 1, 22, 300, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 614, 'A', 'D', 1, 22, 315, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 615, 'A', 'D', 1, 22, 330, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 616, 'A', 'D', 1, 22, 345, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 617, 'A', 'D', 1, 22, 360, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 618, 'A', 'D', 1, 22, 375, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 619, 'A', 'D', 1, 22, 390, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 620, 'A', 'D', 1, 22, 405, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 621, 'A', 'D', 1, 22, 420, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 622, 'A', 'D', 1, 22, 435, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 623, 'A', 'D', 1, 22, 450, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 624, 'A', 'D', 1, 22, 465, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 625, 'A', 'D', 1, 22, 480, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 626, 'A', 'D', 1, 22, 495, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 627, 'A', 'D', 1, 22, 510, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 628, 'A', 'D', 1, 22, 525, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 629, 'A', 'D', 1, 22, 540, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 630, 'A', 'D', 1, 22, 555, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 631, 'A', 'D', 1, 22, 570, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 632, 'A', 'D', 1, 22, 585, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 633, 'A', 'D', 1, 22, 600, 450, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+
+---
+
+-- A 등급 23행 (41석) - y좌표: 465
+(1, 634, 'A', 'D', 1, 23, 0, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 635, 'A', 'D', 1, 23, 15, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 636, 'A', 'D', 1, 23, 30, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 637, 'A', 'D', 1, 23, 45, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 638, 'A', 'D', 1, 23, 60, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 639, 'A', 'D', 1, 23, 75, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 640, 'A', 'D', 1, 23, 90, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 641, 'A', 'D', 1, 23, 105, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 642, 'A', 'D', 1, 23, 120, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 643, 'A', 'D', 1, 23, 135, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 644, 'A', 'D', 1, 23, 150, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 645, 'A', 'D', 1, 23, 165, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 646, 'A', 'D', 1, 23, 180, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 647, 'A', 'D', 1, 23, 195, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 648, 'A', 'D', 1, 23, 210, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 649, 'A', 'D', 1, 23, 225, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 650, 'A', 'D', 1, 23, 240, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 651, 'A', 'D', 1, 23, 255, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 652, 'A', 'D', 1, 23, 270, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 653, 'A', 'D', 1, 23, 285, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 654, 'A', 'D', 1, 23, 300, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 655, 'A', 'D', 1, 23, 315, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 656, 'A', 'D', 1, 23, 330, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 657, 'A', 'D', 1, 23, 345, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 658, 'A', 'D', 1, 23, 360, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 659, 'A', 'D', 1, 23, 375, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 660, 'A', 'D', 1, 23, 390, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 661, 'A', 'D', 1, 23, 405, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 662, 'A', 'D', 1, 23, 420, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 663, 'A', 'D', 1, 23, 435, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 664, 'A', 'D', 1, 23, 450, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 665, 'A', 'D', 1, 23, 465, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 666, 'A', 'D', 1, 23, 480, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 667, 'A', 'D', 1, 23, 495, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 668, 'A', 'D', 1, 23, 510, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 669, 'A', 'D', 1, 23, 525, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 670, 'A', 'D', 1, 23, 540, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 671, 'A', 'D', 1, 23, 555, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 672, 'A', 'D', 1, 23, 570, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 673, 'A', 'D', 1, 23, 585, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09'),
+(1, 674, 'A', 'D', 1, 23, 600, 465, 80000, 'AVAILABLE', '2025-08-11 10:00:00+09', '2025-08-11 10:00:00+09');
+
+INSERT INTO booking
+(member_id, performance_schedule_id, order_id, payment_key, payment_method, status, seat_count, total_amount, cancellation_fee, created_at, updated_at)
+VALUES
+-- member_id=8 연지윤
+(8, 1, '1234-5678-9012-3456', 'pk_live_a1b2c3d4e5f6', 'TOSS', 'CONFIRMED', 2, 360000, 0, NOW(), NOW()),
+(8, 6, '2334-5678-9012-3456', 'pk_live_f6e5d4c3b2a1', 'TOSS', 'CONFIRMED', 3, 420000, 0, NOW(), NOW()),
+
+-- member_id=14 김주혜
+(14, 2, '3234-5678-9012-3456', 'pk_live_abcdef123456', 'TOSS', 'CONFIRMED', 1, 180000, 0, NOW(), NOW()),
+(14, 7, '4234-5678-9012-3456', 'pk_live_654321fedcba', 'TOSS', 'CONFIRMED', 4, 440000, 0, NOW(), NOW()),
+
+-- member_id=1 SSAFY관리자
+(1, 3, '5234-5678-9012-3456', 'pk_live_qwerty098765', 'TOSS', 'CONFIRMED', 2, 280000, 0, NOW(), NOW()),
+(1, 8, '6234-5678-9012-3456', 'pk_live_56789zxcvbnm', 'TOSS', 'CONFIRMED', 1, 110000, 0, NOW(), NOW()),
+
+-- member_id=5 최테스트
+(5, 4, '7234-5678-9012-3456', 'pk_live_mnbvcxz98765', 'TOSS', 'CONFIRMED', 3, 510000, 0, NOW(), NOW()),
+(5, 9, '8234-5678-9012-3456', 'pk_live_13579asdfghj', 'TOSS', 'CONFIRMED', 2, 220000, 0, NOW(), NOW()),
+
+-- member_id=6 김승호
+(6, 5, '9234-5678-9012-3456', 'pk_live_jklpoi098765', 'TOSS', 'CONFIRMED', 1, 140000, 0, NOW(), NOW()),
+(6, 10, '1334-5678-9012-3456', 'pk_live_24680lkjhgf', 'TOSS', 'CONFIRMED', 4, 720000, 0, NOW(), NOW()),
+
+-- member_id=7 김서원
+(7, 1, '1434-5678-9012-3456', 'pk_live_opqwer456789', 'TOSS', 'CONFIRMED', 2, 360000, 0, NOW(), NOW()),
+(7, 6, '1534-5678-9012-3456', 'pk_live_zxcvbn123456', 'TOSS', 'CONFIRMED', 3, 390000, 0, NOW(), NOW()),
+
+-- member_id=9 김용범
+(9, 2, '1634-5678-9012-3456', 'pk_live_ghjklm098765', 'TOSS', 'CONFIRMED', 1, 180000, 0, NOW(), NOW()),
+(9, 7, '1734-5678-9012-3456', 'pk_live_qazwsx123456', 'TOSS', 'CONFIRMED', 2, 280000, 0, NOW(), NOW()),
+
+-- member_id=2 김코딩
+(2, 3, '1834-5678-9012-3456', 'pk_live_edcrfv098765', 'TOSS', 'CONFIRMED', 3, 510000, 0, NOW(), NOW()),
+(2, 8, '1934-5678-9012-3456', 'pk_live_tgbnhy123456', 'TOSS', 'CONFIRMED', 1, 80000, 0, NOW(), NOW()),
+
+-- member_id=13 김주혜
+(13, 4, '2034-5678-9012-3456', 'pk_live_ujmko0987654', 'TOSS', 'CONFIRMED', 4, 640000, 0, NOW(), NOW()),
+(13, 9, '2134-5678-9012-3456', 'pk_live_iklop0987654', 'TOSS', 'CONFIRMED', 2, 220000, 0, NOW(), NOW()),
+
+-- member_id=3 박디자인
+(3, 5, '2235-5678-9012-3456', 'pk_live_plokij098765', 'TOSS', 'CONFIRMED', 2, 280000, 0, NOW(), NOW()),
+(3, 10, '2394-5678-9012-3456', 'pk_live_mnhbgv098765', 'TOSS', 'CONFIRMED', 3, 330000, 0, NOW(), NOW()),
+
+-- member_id=12 박준서
+(12, 1, '8444-1678-9012-3456', 'pk_live_rfvtgb098765', 'TOSS', 'CONFIRMED', 4, 440000, 0, NOW(), NOW()),
+(12, 6, '9534-5628-9012-3456', 'pk_live_yhnujm098765', 'TOSS', 'CONFIRMED', 2, 160000, 0, NOW(), NOW()),
+
+-- member_id=4 이기획
+(4, 2, '2634-5678-9012-3456', 'pk_live_ujmnhy098765', 'TOSS', 'CONFIRMED', 1, 110000, 0, NOW(), NOW()),
+(4, 7, '2734-5678-9012-3456', 'pk_live_bvfred098765', 'TOSS', 'CONFIRMED', 3, 390000, 0, NOW(), NOW()),
+
+-- member_id=11 최인국
+(11, 3, '2834-5678-9012-3456', 'pk_live_cdewsx098765', 'TOSS', 'CONFIRMED', 2, 280000, 0, NOW(), NOW()),
+(11, 8, '2934-5678-9012-3456', 'pk_live_xswedc098765', 'TOSS', 'CONFIRMED', 4, 720000, 0, NOW(), NOW()),
+
+-- member_id=10 공예슬
+(10, 4, '3034-5678-9012-3456', 'pk_live_vfrtgb098765', 'TOSS', 'CONFIRMED', 2, 280000, 0, NOW(), NOW()),
+(10, 9, '3134-5678-9012-3456', 'pk_live_tgbyhn098765', 'TOSS', 'CONFIRMED', 1, 80000, 0, NOW(), NOW());
+
+INSERT INTO booking_seat
+(booking_id, seat_id, booking_number, price, status, created_at, updated_at)
+VALUES
+-- booking_id=1 (perf=1, seat_count=2, total=360000 -> 180k x2)
+(1, 1, '1001-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+(1, 2, '1001-0001-0001-0002', 180000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=2 (perf=2, seat_count=3, total=420000 -> 140k x3)
+(2, 3, '1002-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(2, 4, '1002-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+(2, 5, '1002-0001-0001-0003', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=3 (perf=1, seat_count=1, total=180000 -> 180k)
+(3, 6, '1003-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=4 (perf=2, seat_count=4, total=440000 -> 110k x4)
+(4, 7, '1004-0001-0001-0001', 110000, 'RESERVED', NOW(), NOW()),
+(4, 8, '1004-0001-0001-0002', 110000, 'RESERVED', NOW(), NOW()),
+(4, 9, '1004-0001-0001-0003', 110000, 'RESERVED', NOW(), NOW()),
+(4, 10, '1004-0001-0001-0004', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=5 (perf=1, seat_count=2, total=280000 -> 140k x2)
+(5, 11, '1005-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(5, 12, '1005-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=6 (perf=2, seat_count=1, total=110000 -> 110k)
+(6, 13, '1006-0001-0001-0001', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=7 (perf=1, seat_count=3, 원장부합 510000(불가) → 좌석합 500000: 180k+180k+140k)
+(7, 14, '1007-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+(7, 15, '1007-0001-0001-0002', 180000, 'RESERVED', NOW(), NOW()),
+(7, 16, '1007-0001-0001-0003', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=8 (perf=2, seat_count=2, total=220000 -> 110k x2)
+(8, 17, '1008-0001-0001-0001', 110000, 'RESERVED', NOW(), NOW()),
+(8, 18, '1008-0001-0001-0002', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=9 (perf=1, seat_count=1, total=140000 -> 140k)
+(9, 19, '1009-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=10 (perf=2, seat_count=4, total=720000 -> 180k x4)
+(10, 20, '1010-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+(10, 21, '1010-0001-0001-0002', 180000, 'RESERVED', NOW(), NOW()),
+(10, 22, '1010-0001-0001-0003', 180000, 'RESERVED', NOW(), NOW()),
+(10, 23, '1010-0001-0001-0004', 180000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=11 (perf=1, seat_count=2, total=360000 -> 180k x2)
+(11, 24, '1011-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+(11, 25, '1011-0001-0001-0002', 180000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=12 (perf=2, seat_count=3, total=390000 -> 140k+140k+110k)
+(12, 26, '1012-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(12, 27, '1012-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+(12, 28, '1012-0001-0001-0003', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=13 (perf=1, seat_count=1, total=180000 -> 180k)
+(13, 29, '1013-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=14 (perf=2, seat_count=2, total=280000 -> 140k x2)
+(14, 30, '1014-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(14, 31, '1014-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=15 (perf=1, seat_count=3, 원장부합 510000(불가) → 좌석합 500000: 180k+180k+140k)
+(15, 32, '1015-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+(15, 33, '1015-0001-0001-0002', 180000, 'RESERVED', NOW(), NOW()),
+(15, 34, '1015-0001-0001-0003', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=16 (perf=2, seat_count=1, total=80000 -> 80k)
+(16, 35, '1016-0001-0001-0001', 80000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=17 (perf=1, seat_count=4, total=640000 -> 180k+180k+140k+140k)
+(17, 36, '1017-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+(17, 37, '1017-0001-0001-0002', 180000, 'RESERVED', NOW(), NOW()),
+(17, 38, '1017-0001-0001-0003', 140000, 'RESERVED', NOW(), NOW()),
+(17, 39, '1017-0001-0001-0004', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=18 (perf=2, seat_count=2, total=220000 -> 110k x2)
+(18, 40, '1018-0001-0001-0001', 110000, 'RESERVED', NOW(), NOW()),
+(18, 41, '1018-0001-0001-0002', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=19 (perf=1, seat_count=2, total=280000 -> 140k x2)
+(19, 42, '1019-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(19, 43, '1019-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=20 (perf=2, seat_count=3, total=330000 -> 110k x3)
+(20, 44, '1020-0001-0001-0001', 110000, 'RESERVED', NOW(), NOW()),
+(20, 45, '1020-0001-0001-0002', 110000, 'RESERVED', NOW(), NOW()),
+(20, 46, '1020-0001-0001-0003', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=21 (perf=1, seat_count=4, total=440000 -> 110k x4)
+(21, 47, '1021-0001-0001-0001', 110000, 'RESERVED', NOW(), NOW()),
+(21, 48, '1021-0001-0001-0002', 110000, 'RESERVED', NOW(), NOW()),
+(21, 49, '1021-0001-0001-0003', 110000, 'RESERVED', NOW(), NOW()),
+(21, 50, '1021-0001-0001-0004', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=22 (perf=2, seat_count=2, total=160000 -> 80k x2)
+(22, 51, '1022-0001-0001-0001', 80000, 'RESERVED', NOW(), NOW()),
+(22, 52, '1022-0001-0001-0002', 80000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=23 (perf=1, seat_count=1, total=110000 -> 110k)
+(23, 53, '1023-0001-0001-0001', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=24 (perf=2, seat_count=3, total=390000 -> 140k+140k+110k)
+(24, 54, '1024-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(24, 55, '1024-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+(24, 56, '1024-0001-0001-0003', 110000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=25 (perf=1, seat_count=2, total=280000 -> 140k x2)
+(25, 57, '1025-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(25, 58, '1025-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=26 (perf=2, seat_count=4, total=720000 -> 180k x4)
+(26, 59, '1026-0001-0001-0001', 180000, 'RESERVED', NOW(), NOW()),
+(26, 60, '1026-0001-0001-0002', 180000, 'RESERVED', NOW(), NOW()),
+(26, 61, '1026-0001-0001-0003', 180000, 'RESERVED', NOW(), NOW()),
+(26, 62, '1026-0001-0001-0004', 180000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=27 (perf=1, seat_count=2, total=280000 -> 140k x2)
+(27, 63, '1027-0001-0001-0001', 140000, 'RESERVED', NOW(), NOW()),
+(27, 64, '1027-0001-0001-0002', 140000, 'RESERVED', NOW(), NOW()),
+
+-- booking_id=28 (perf=2, seat_count=1, total=80000 -> 80k)
+(28, 65, '1028-0001-0001-0001', 80000, 'RESERVED', NOW(), NOW());
+
+
+
+INSERT INTO payment (booking_id, payment_key, method, status, amount, created_at, updated_at) VALUES
+(1, 'toss-payment-1', 'TOSS', 'COMPLETED', 360000, '2025-08-11 11:00:00+09', '2025-08-11 11:00:00+09'),
+(2, 'toss-payment-2', 'TOSS', 'COMPLETED', 420000, '2025-08-11 12:00:00+09', '2025-08-11 12:00:00+09'),
+(3, 'toss-payment-3', 'TOSS', 'COMPLETED', 180000, '2025-08-11 13:00:00+09', '2025-08-11 13:00:00+09'),
+(4, 'toss-payment-4', 'TOSS', 'COMPLETED', 440000, '2025-08-11 14:00:00+09', '2025-08-11 14:00:00+09'),
+(5, 'toss-payment-5', 'TOSS', 'COMPLETED', 280000, '2025-08-11 15:00:00+09', '2025-08-11 15:00:00+09'),
+(6, 'toss-payment-6', 'TOSS', 'COMPLETED', 110000, '2025-08-11 16:00:00+09', '2025-08-11 16:00:00+09'),
+(7, 'toss-payment-7', 'TOSS', 'COMPLETED', 500000, '2025-08-11 17:00:00+09', '2025-08-11 17:00:00+09'),
+(8, 'toss-payment-8', 'TOSS', 'COMPLETED', 220000, '2025-08-11 18:00:00+09', '2025-08-11 18:00:00+09'),
+(9, 'toss-payment-9', 'TOSS', 'COMPLETED', 140000, '2025-08-11 19:00:00+09', '2025-08-11 19:00:00+09'),
+(10, 'toss-payment-10', 'TOSS', 'COMPLETED', 720000, '2025-08-11 20:00:00+09', '2025-08-11 20:00:00+09'),
+(11, 'toss-payment-11', 'TOSS', 'COMPLETED', 360000, '2025-08-11 21:00:00+09', '2025-08-11 21:00:00+09'),
+(12, 'toss-payment-12', 'TOSS', 'COMPLETED', 390000, '2025-08-11 22:00:00+09', '2025-08-11 22:00:00+09'),
+(13, 'toss-payment-13', 'TOSS', 'COMPLETED', 180000, '2025-08-11 23:00:00+09', '2025-08-11 23:00:00+09'),
+(14, 'toss-payment-14', 'TOSS', 'COMPLETED', 280000, '2025-08-12 00:00:00+09', '2025-08-12 00:00:00+09'),
+(15, 'toss-payment-15', 'TOSS', 'COMPLETED', 500000, '2025-08-12 01:00:00+09', '2025-08-12 01:00:00+09'),
+(16, 'toss-payment-16', 'TOSS', 'COMPLETED', 80000, '2025-08-12 02:00:00+09', '2025-08-12 02:00:00+09'),
+(17, 'toss-payment-17', 'TOSS', 'COMPLETED', 640000, '2025-08-12 03:00:00+09', '2025-08-12 03:00:00+09'),
+(18, 'toss-payment-18', 'TOSS', 'COMPLETED', 220000, '2025-08-12 04:00:00+09', '2025-08-12 04:00:00+09'),
+(19, 'toss-payment-19', 'TOSS', 'COMPLETED', 280000, '2025-08-12 05:00:00+09', '2025-08-12 05:00:00+09'),
+(20, 'toss-payment-20', 'TOSS', 'COMPLETED', 330000, '2025-08-12 06:00:00+09', '2025-08-12 06:00:00+09'),
+(21, 'toss-payment-21', 'TOSS', 'COMPLETED', 440000, '2025-08-12 07:00:00+09', '2025-08-12 07:00:00+09'),
+(22, 'toss-payment-22', 'TOSS', 'COMPLETED', 160000, '2025-08-12 08:00:00+09', '2025-08-12 08:00:00+09'),
+(23, 'toss-payment-23', 'TOSS', 'COMPLETED', 110000, '2025-08-12 09:00:00+09', '2025-08-12 09:00:00+09'),
+(24, 'toss-payment-24', 'TOSS', 'COMPLETED', 390000, '2025-08-12 10:00:00+09', '2025-08-12 10:00:00+09'),
+(25, 'toss-payment-25', 'TOSS', 'COMPLETED', 280000, '2025-08-12 11:00:00+09', '2025-08-12 11:00:00+09'),
+(26, 'toss-payment-26', 'TOSS', 'COMPLETED', 720000, '2025-08-12 12:00:00+09', '2025-08-12 12:00:00+09'),
+(27, 'toss-payment-27', 'TOSS', 'COMPLETED', 280000, '2025-08-12 13:00:00+09', '2025-08-12 13:00:00+09'),
+(28, 'toss-payment-28', 'TOSS', 'COMPLETED', 80000, '2025-08-12 14:00:00+09', '2025-08-12 14:00:00+09');
+
+INSERT INTO review (user_id, performance_id, booking_id, content, rating, created_at, updated_at) VALUES
+-- member_id=1
+(1, 1, 5, '무대 연출이 환상적이었고, 배우들의 에너지가 넘쳤습니다.', 9.0, NOW(), NOW()),
+(1, 2, 6, '록 페스티벌 특유의 현장감이 최고였지만 음향이 조금 아쉬웠습니다.', 7.0, NOW(), NOW()),
+
+-- member_id=2
+(2, 1, 17, '스토리가 탄탄하고 몰입감이 대단했습니다.', 10.0, NOW(), NOW()),
+(2, 2, 18, '무대 조명과 사운드가 완벽하게 조화를 이루었어요.', 8.0, NOW(), NOW()),
+
+-- member_id=3
+(3, 1, 19, '배우들의 연기가 생생했고 감정 전달이 훌륭했습니다.', 8.0, NOW(), NOW()),
+(3, 2, 20, '페스티벌 분위기가 좋았지만 비가 와서 조금 불편했어요.', 6.0, NOW(), NOW());

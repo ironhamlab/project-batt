@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "performanceId": 1,
+    "performanceDate": "2025/08/15 20:00:00",
+    "performanceLevel": "A",
+    "performanceSeat": "506",
+    "price": 80000,
+    "deadline": "2025-08-15T10:00:00Z",
+    "status": "OPEN",
+    "participants": 298
+  },
+  {
+    "id": 2,
+    "performanceId": 1,
+    "performanceDate": "2025/08/16 18:00:00",
+    "performanceLevel": "R",
+    "performanceSeat": "12-5",
+    "price": 120000,
+    "deadline": "2025-08-14T22:00:00Z",
+    "status": "OPEN",
+    "participants": 150
+  },
+  {
+    "id": 3,
+    "performanceId": 1,
+    "performanceDate": "2025/08/17 15:00:00",
+    "performanceLevel": "VIP",
+    "performanceSeat": "1-1",
+    "price": 150000,
+    "deadline": "2024-01-01T00:00:00Z",
+    "status": "CLOSED",
+    "participants": 320
+  }
+]

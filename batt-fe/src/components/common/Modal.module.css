@@ -1,0 +1,363 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  background-color: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #adb5bd;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.modalText {
+  font-size: 1.1rem;
+  color: #212529;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.cancelButton {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.confirmButton {
+  background-color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.confirmButton:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.primaryButton {
+  background-color: #007bff;
+  border: 1px solid #007bff;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.primaryButton:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+}
+
+.secondaryButton {
+  background-color: #6c757d;
+  border: 1px solid #6c757d;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover {
+  background-color: #545b62;
+  border-color: #4e555b;
+}
+
+/* Transfer Modal Styles */
+.infoSection {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.infoSection h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.feeInfo {
+  margin-bottom: 10px;
+}
+
+.feeInfo p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.infoButton {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid #adb5bd;
+  background: #fff;
+  color: #495057;
+  font-size: 12px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.infoButton:hover {
+  background-color: #f1f3f5;
+}
+
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltipBubble {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  width: 280px;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+}
+
+.tooltipBubble::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  border-width: 0 8px 8px 8px;
+  border-style: solid;
+  border-color: transparent transparent #dee2e6 transparent;
+}
+
+.tooltipBubble::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: 11px;
+  border-width: 0 7px 7px 7px;
+  border-style: solid;
+  border-color: transparent transparent #fff transparent;
+}
+
+.tooltipTitle {
+  padding: 10px 12px 4px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #343a40;
+}
+
+.tooltipBody {
+  padding: 0 12px 12px 12px;
+}
+
+.currentFee {
+  font-size: 16px;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.currentFeeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.warningSection {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+}
+
+.warningText {
+  margin: 0;
+  color: #856404;
+  font-size: 14px;
+}
+
+.inputSection {
+  margin-bottom: 20px;
+}
+
+.inputSection h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.dateTimeInputs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.inputGroup {
+  flex: 1;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.dateInput,
+.timeInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.timeZoneInfo {
+  margin: 10px 0 0 0;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Cancel Modal Styles */
+.bookingInfo {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.bookingInfo h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.infoGrid span:nth-child(odd) {
+  font-weight: 500;
+  color: #666;
+}
+
+.infoGrid span:nth-child(even) {
+  color: #333;
+}
+
+.warningList {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.warningList li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.confirmSection {
+  margin-bottom: 20px;
+  text-align: center;
+  padding: 15px;
+  background-color: #ffe6e6;
+  border-radius: 8px;
+}
+
+.confirmText {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #d63384;
+}
+
+.reasonTextarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.charCount {
+  margin-top: 6px;
+  text-align: right;
+  font-size: 12px;
+  color: #868e96;
+}
